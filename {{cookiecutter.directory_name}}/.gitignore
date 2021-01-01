@@ -2,6 +2,7 @@
 venv
 __pycache__
 node_modules/
+/{{cookiecutter.project_name}}.egg-info/
 /logs/
 !logs/.gitkeep
 /media/*
