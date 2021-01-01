@@ -16,6 +16,7 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - [Sentry](https://sentry.io/welcome) integration
 - Dependency management using [poetry](https://python-poetry.org/)
 - Multi-environment settings
+- E-mail testing using [django-imap-backend](https://github.com/Sibyx/django-imap-backend) in `development` environment
 
 ### Bundled dependencies
 
@@ -37,6 +38,8 @@ cookiecutter gh:backbonesk/django-project-template
 ## Next steps
 
 1. Check `pyproject.toml` and change the `authors` list
+2. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
+3. Take a coffee and celebrate life, you saved a plenty of time!
 
 ---
 Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2021
