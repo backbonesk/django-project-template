@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'updater_api.wsgi.application'
+WSGI_APPLICATION = '{{cookiecutter.project_name}}.wsgi.application'
 
 
 # Database
