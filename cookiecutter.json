@@ -1,4 +1,5 @@
 {
   "directory_name": "AnotherAwesomeProject",
-  "project_name": "another_awesome_project"
+  "project_name": "another_awesome_project",
+  "description": "Another awesome project which will save the word!"
 }

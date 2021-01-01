@@ -34,5 +34,9 @@ call:
 cookiecutter gh:backbonesk/django-project-template
 ```
 
+## Next steps
+
+1. Check `pyproject.toml` and change the `authors` list
+
 ---
 Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2021
