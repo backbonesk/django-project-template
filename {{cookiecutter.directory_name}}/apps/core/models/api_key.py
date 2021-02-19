@@ -1,8 +1,5 @@
-from enum import Enum
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django_enum_choices.fields import EnumChoiceField
 
 from apps.core.models.base import BaseModel
 
@@ -15,17 +12,16 @@ class ApiKey(BaseModel):
         verbose_name = _('api_key')
         verbose_name_plural = _('api_keys')
 
-    class DevicePlatform(Enum):
-        WEB = 'web'
-        ANDROID = 'android'
-        IOS = 'ios'
-        DEBUG = 'debug'
-
-        def __str__(self):
-            return _(f"api_key_{self.value}")
+    class DevicePlatform(models.TextChoices):
+        WEB = 'web', _('web')
+        ANDROID = 'android', _('android')
+        IOS = 'ios', _('ios')
+        DEBUG = 'debug', _('debug')
 
     name = models.CharField(max_length=200, null=True)
-    platform = EnumChoiceField(DevicePlatform, null=False, default=DevicePlatform.DEBUG)
+    platform = models.CharField(
+        max_lenght=10, null=False, choices=DevicePlatform.choices, default=DevicePlatform.DEBUG
+    )
     secret = models.CharField(max_length=30, null=False)
     is_active = models.BooleanField(default=False)
 
