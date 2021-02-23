@@ -22,7 +22,6 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 
 - [django_api_forms](https://github.com/Sibyx/django_api_forms): Request validation
 - [python-dotenv](https://github.com/theskumar/python-dotenv): `.env` handling
-- [django-enum-choices](https://github.com/HackSoftware/django-enum-choices): Enums in Django models
 - [porcupine-python](https://github.com/zurek11/porcupine-python): Response serialisation
 - [django-imap-backend](https://github.com/Sibyx/django-imap-backend): Custom e-mail backend for simplified testing
 
