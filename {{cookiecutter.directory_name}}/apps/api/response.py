@@ -44,8 +44,8 @@ class GeneralResponse(HttpResponse):
     def __init__(self, request, data: dict = None, serializer: Type[Serializer] = None, **kwargs):
         params = {}
         if data is not None:
-            content_type = request.headers.get('accept', 'application/json')
-            if content_type in ['*/*', 'application/json']:
+            accept = set(map(lambda x: x.split(';')[0], request.headers.get('accept', 'application/json').split(',')))
+            if accept.intersection({'*/*', 'application/json'}):
                 params['content_type'] = 'application/json'
                 params['content'] = json.dumps(data, cls=ApiJSONEncoder, serializer=serializer)
             else:
@@ -57,7 +57,7 @@ class GeneralResponse(HttpResponse):
                         'available': [
                             'application/json',
                         ],
-                        'asked': content_type
+                        'asked': list(accept)
                     }
                 })
 
