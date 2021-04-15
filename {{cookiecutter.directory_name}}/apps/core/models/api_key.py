@@ -20,7 +20,7 @@ class ApiKey(BaseModel):
 
     name = models.CharField(max_length=200, null=True)
     platform = models.CharField(
-        max_lenght=10, null=False, choices=DevicePlatform.choices, default=DevicePlatform.DEBUG
+        max_length=10, null=False, choices=DevicePlatform.choices, default=DevicePlatform.DEBUG
     )
     secret = models.CharField(max_length=30, null=False)
     is_active = models.BooleanField(default=False)
