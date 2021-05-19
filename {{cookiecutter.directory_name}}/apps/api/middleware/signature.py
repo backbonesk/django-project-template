@@ -20,16 +20,13 @@ class SignatureMiddleware(object):
     @staticmethod
     def process_view(request, view_func, view_args, view_kwargs):
         # View functions
-        if not hasattr(view_func, 'require_apikey'):
-            return None
-
-        if hasattr(view_func, 'require_apikey') and not view_func.require_apikey:
+        if hasattr(view_func, 'signature_exempt') and view_func.signature_exempt:
             return None
 
         # View classes
-        if hasattr(view_func, 'view_class') and \
-           hasattr(view_func.view_class, 'require_apikey') and \
-           request.method.lower() not in view_func.view_class.require_apikey:
+        if hasattr(view_func, 'view_class') \
+            and hasattr(view_func.view_class, 'skip_signature') \
+            and request.method.lower() in view_func.view_class.skip_signature:
             return None
 
         api_key = request.headers.get('X-Apikey')
