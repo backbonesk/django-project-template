@@ -10,7 +10,7 @@ from apps.api.response import ErrorResponse
 from apps.core.models import ApiKey
 
 
-class SignatureMiddleware(object):
+class ApiKeyMiddleware(object):
     def __init__(self, get_response=None):
         self.get_response = get_response
 
@@ -20,7 +20,7 @@ class SignatureMiddleware(object):
     @staticmethod
     def process_view(request, view_func, view_args, view_kwargs):
         # View functions
-        if hasattr(view_func, 'signature_exempt') and view_func.signature_exempt:
+        if hasattr(view_func, 'apikey_exempt') and view_func.apikey_exempt:
             return None
 
         # View classes
@@ -71,5 +71,5 @@ class SignatureMiddleware(object):
 
 
 __all__ = [
-    'SignatureMiddleware'
+    'ApiKeyMiddleware'
 ]
