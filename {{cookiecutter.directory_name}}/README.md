@@ -41,7 +41,7 @@ class ExampleClassBasedView(View):
 from django.views.decorators.http import require_http_methods
 
 from apps.api.decorators import apikey_exempt
-from apps.api.response import PaginationResponse
+from apps.api.response import SingleResponse
 
 
 @apikey_exempt
@@ -52,7 +52,7 @@ def example_function_based_view(request):
         'bar': 'example'
     }
 
-    return PaginationResponse(request, data)
+    return SingleResponse(request, data)
 ```
 
 ## Cron jobs
