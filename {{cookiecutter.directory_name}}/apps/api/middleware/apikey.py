@@ -20,14 +20,15 @@ class ApiKeyMiddleware(object):
     @staticmethod
     def process_view(request, view_func, view_args, view_kwargs):
         # View functions
-        if hasattr(view_func, 'apikey_exempt') and view_func.apikey_exempt:
-            return None
+        if hasattr(view_func, 'apikey_exempt'):
+            if view_func.apikey_exempt:
+                return None
 
         # View classes
-        if hasattr(view_func, 'view_class') \
-            and hasattr(view_func.view_class, 'skip_signature') \
-            and request.method.lower() in view_func.view_class.skip_signature:
-            return None
+        if hasattr(view_func, 'view_class'):
+            if hasattr(view_func.view_class, 'apikey_exempt'):
+                if request.method.lower() in [item.lower() for item in view_func.view_class.apikey_exempt]:
+                    return None
 
         api_key = request.headers.get('X-Apikey')
         signature = request.headers.get('X-Signature', '')
