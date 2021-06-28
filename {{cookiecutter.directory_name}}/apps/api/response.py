@@ -1,8 +1,7 @@
 import json
 from dataclasses import dataclass
-from enum import Enum
 from http import HTTPStatus
-from typing import Type, Union
+from typing import Type, Union, List
 
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -10,42 +9,44 @@ from django.utils.translation import gettext as _
 from porcupine.base import Serializer
 
 from apps.api.encoders import ApiJSONEncoder
-from apps.api.errors import ValidationException, ApiException
+from apps.api.errors import ValidationException, ProblemDetailException
+from apps.core.models.base import BaseModel
 
 
 @dataclass
 class Ordering:
-    class Order(Enum):
-        ASC = 'asc'
-        DESC = 'desc'
-
-    column: str
-    order: Order = Order.ASC
+    columns: List[str]
 
     @classmethod
     def create_from_request(cls, request, aliases: dict = None) -> 'Ordering':
-        column = request.GET.get('order_by', 'created_at')
+        columns = []
         aliases = aliases or {}
 
-        if column in aliases:
-            column = aliases.get(column)
+        for column in request.GET.get('order_by', 'created_at').split(','):
+            column_name = column[1:] if column.startswith("-") else column
+            if column_name in aliases.keys():
+                columns.append(
+                    f"-{aliases[column_name]}" if column.startswith("-") else aliases[column_name]
+                )
+            else:
+                columns.append(column)
 
-        result = Ordering(column, Ordering.Order(request.GET.get('order', 'asc')))
+        result = Ordering(columns)
         return result
 
     def __str__(self):
-        return self.column if self.order == self.Order.ASC else f"-{self.column}"
+        return ",".join(self.columns)
 
     def __repr__(self):
         return self.__str__()
 
 
 class GeneralResponse(HttpResponse):
-    def __init__(self, request, data: dict = None, serializer: Type[Serializer] = None, **kwargs):
+    def __init__(self, request, data: Union[BaseModel, dict] = None, serializer: Type[Serializer] = None, **kwargs):
         params = {}
         if data is not None:
-            accept = set(map(lambda x: x.split(';')[0], request.headers.get('accept', 'application/json').split(',')))
-            if accept.intersection({'*/*', 'application/json'}):
+            content_type = request.headers.get('accept', 'application/json')
+            if content_type in ['*/*', 'application/json']:
                 params['content_type'] = 'application/json'
                 params['content'] = json.dumps(data, cls=ApiJSONEncoder, serializer=serializer)
             else:
@@ -57,7 +58,7 @@ class GeneralResponse(HttpResponse):
                         'available': [
                             'application/json',
                         ],
-                        'asked': list(accept)
+                        'asked': content_type
                     }
                 })
 
@@ -78,22 +79,20 @@ class SingleResponse(GeneralResponse):
 
 class ErrorResponse(GeneralResponse):
     def __init__(self, request, payload: dict, **kwargs):
-        data = {
-            'errors': payload,
-            'metadata': {}
-        }
-
-        super().__init__(request=request, data=data, **kwargs)
+        super().__init__(request=request, data=payload, **kwargs)
 
     @staticmethod
-    def create_from_exception(e: ApiException) -> 'ErrorResponse':
-        return ErrorResponse(e.request, e.payload, status=e.status_code)
+    def create_from_exception(e: ProblemDetailException) -> 'ErrorResponse':
+        return ErrorResponse(e.request, e.payload, status=e.status, headers=e.extra_headers)
 
 
 class ValidationResponse(GeneralResponse):
     def __init__(self, request, payload: dict, **kwargs):
         data = {
-            'errors': payload
+            'type': '/validation-error',
+            'title': 'Invalid request parameters',
+            'status': HTTPStatus.UNPROCESSABLE_ENTITY,
+            'errors': payload,
         }
 
         super().__init__(request, data, status=HTTPStatus.UNPROCESSABLE_ENTITY, **kwargs)
@@ -105,19 +104,20 @@ class ValidationResponse(GeneralResponse):
 
 class PaginationResponse(GeneralResponse):
     def __init__(
-        self, request, qs, page: int, limit: Union[int, None] = None, ordering: Ordering = None, **kwargs
+        self, request, qs, page: Union[int, None] = None, limit: Union[int, None] = None, ordering: Ordering = None,
+        **kwargs
     ):
         kwargs.setdefault('content_type', 'application/json')
 
         # Ordering
-        ordering = ordering if ordering else Ordering('created_at')
+        ordering = ordering if ordering else Ordering.create_from_request(request)
         qs = qs.order_by(str(ordering))
 
         if limit is None:
             data = {
                 'items': qs,
                 'metadata': {
-                    'page': int(page),
+                    'page': int(request.GET.get('page', 1)) if not page else page,
                     'limit': None,
                     'pages': 1,
                     'total': qs.count()
@@ -140,9 +140,9 @@ class PaginationResponse(GeneralResponse):
 
 
 __all__ = [
-    "SingleResponse",
-    "ErrorResponse",
-    "PaginationResponse",
-    "ValidationResponse",
-    "Ordering"
+    'SingleResponse',
+    'ErrorResponse',
+    'PaginationResponse',
+    'ValidationResponse',
+    'Ordering'
 ]

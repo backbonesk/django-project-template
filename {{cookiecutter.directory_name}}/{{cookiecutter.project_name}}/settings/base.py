@@ -61,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'apps.api.middleware.exceptions.ExceptionMiddleware',
-    'apps.api.middleware.signature.SignatureMiddleware',
 ]
 
 ROOT_URLCONF = '{{cookiecutter.project_name}}.urls'
@@ -124,6 +123,10 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'apps.core.auth.BearerBackend'
 ]
 
 AUTH_USER_MODEL = "core.User"

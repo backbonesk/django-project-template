@@ -5,7 +5,7 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 
 ## What's inside?
 
-- Exception handling (`ApiException`, `ValidationException`
+- Exception handling (`ProblemDetailException`, `ValidationException`
   prepared for [django_api_forms](https://github.com/Sibyx/django_api_forms))
 - Basic security (signature middleware, Argon password hasher)
 - Hard/soft delete for models
