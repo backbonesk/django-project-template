@@ -1,5 +1,11 @@
 # Changelog
 
-## 0.1.0 : TBD
+## 0.1.0 : 2021-05-26
 
-Initial release
+Initial release with:
+
+- [django_api_forms](https://github.com/Sibyx/django_api_forms): Request validation
+- [python-dotenv](https://github.com/theskumar/python-dotenv): `.env` handling
+- [porcupine-python](https://github.com/zurek11/porcupine-python): Response serialisation
+- [django-imap-backend](https://github.com/Sibyx/django-imap-backend): Custom e-mail backend for simplified testing
+- [django-celery-beat](https://github.com/celery/django-celery-beat): CRON jobs
