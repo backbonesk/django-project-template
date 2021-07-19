@@ -10,21 +10,20 @@
 ### Dump data from DB to fixtures:
 - `python manage.py dumpdata core.<ModelClassName> > apps/core/fixtures/<TableName>.json`
 
-## ApiKey Middleware
-
-To skip apikey and signature checking process, you need to specify `apikey_exempt`:
-
 ### Class-based Views
 
 > To deny checking process in the class-based view, you need to specify, which method you want to mark.
-> This is accomplished by adding **class argument** `apikey_exempt` with an array of method names.
+> There are two levels of skipping auth check:
+> 1. **EXEMPT_AUTH**: skips user authentication (auth header is no longer needed).
+> 2. **EXEMPT_API_KEY**: skips request authentication (signature, api_key).
 
 ```python
-from django.views import View
+from apps.api.views.base import SecuredView
 
 
-class ExampleClassBasedView(View):
-    apikey_exempt = ['POST']
+class ExampleClassBasedView(SecuredView):
+    EXEMPT_AUTH = ['GET']
+    EXEMPT_API_KEY = ['GET', 'POST']
 
     def post(self, request):
         pass
@@ -35,25 +34,7 @@ class ExampleClassBasedView(View):
 
 ### Function-based Views
 
-> For skipping signature and apikey checking in the function-based-views we use **decorator** `apikey_exempt`.
-
-```python
-from django.views.decorators.http import require_http_methods
-
-from apps.api.decorators import apikey_exempt
-from apps.api.response import SingleResponse
-
-
-@apikey_exempt
-@require_http_methods(['GET'])
-def example_function_based_view(request):
-    data = {
-        'foo': 1,
-        'bar': 'example'
-    }
-
-    return SingleResponse(request, data)
-```
+> We no longer suport function-based views. They are now all wrapped to the class-based-view.
 
 ## Cron jobs
 

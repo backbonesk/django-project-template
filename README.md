@@ -5,7 +5,7 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 
 ## What's inside?
 
-- Exception handling (`ApiException`, `ValidationException`
+- Exception handling (`ProblemDetailException`, `ValidationException`
   prepared for [django_api_forms](https://github.com/Sibyx/django_api_forms))
 - Basic security (signature middleware, Argon password hasher)
 - Hard/soft delete for models
@@ -17,6 +17,7 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - Dependency management using [poetry](https://python-poetry.org/)
 - Multi-environment settings
 - E-mail testing using [django-imap-backend](https://github.com/Sibyx/django-imap-backend) in `development` environment
+- CRON job management
 
 ### Bundled dependencies
 
@@ -24,6 +25,7 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - [python-dotenv](https://github.com/theskumar/python-dotenv): `.env` handling
 - [porcupine-python](https://github.com/zurek11/porcupine-python): Response serialisation
 - [django-imap-backend](https://github.com/Sibyx/django-imap-backend): Custom e-mail backend for simplified testing
+- [django-celery-beat](https://github.com/celery/django-celery-beat): CRON jobs
 
 ## Usage
 
