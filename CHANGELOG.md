@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 : TBD
+
+- Model mixins merged back to the BaseModel
+- Multiple column sort
+- Django 4.0
+- INSTANCE_NAME environment variable
+
 ## 0.1.0 : 2021-05-26
 
 Initial release with:

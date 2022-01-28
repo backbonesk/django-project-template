@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import Type, Union, List
 
@@ -15,7 +15,7 @@ from apps.core.models.base import BaseModel
 
 @dataclass
 class Ordering:
-    columns: List[str]
+    columns: List[str] = field(default_factory=list)
 
     @classmethod
     def create_from_request(cls, request, aliases: dict = None) -> 'Ordering':
@@ -25,14 +25,16 @@ class Ordering:
         for column in request.GET.get('order_by', 'created_at').split(','):
             column_name = column[1:] if column.startswith("-") else column
             if column_name in aliases.keys():
-                columns.append(
-                    f"-{aliases[column_name]}" if column.startswith("-") else aliases[column_name]
-                )
+                alias_value = aliases[column_name]
+                if isinstance(alias_value, str):
+                    alias_value = [alias_value]
+                for val in alias_value:
+                    columns.append(
+                        f"-{val}" if column.startswith("-") else val
+                    )
             else:
                 columns.append(column)
-
-        result = Ordering(columns)
-        return result
+        return Ordering(columns)
 
     def __str__(self):
         return ",".join(self.columns)
@@ -45,8 +47,11 @@ class GeneralResponse(HttpResponse):
     def __init__(self, request, data: Union[BaseModel, dict] = None, serializer: Type[Serializer] = None, **kwargs):
         params = {}
         if data is not None:
-            content_type = request.headers.get('accept', 'application/json')
-            if content_type in ['*/*', 'application/json']:
+            content_types = str(request.headers.get('accept', 'application/json'))
+            content_types = content_types.split(', ')
+            content_types = list(map(lambda r: r.split(';')[0], content_types))
+
+            if any(x in ['*/*', 'application/json'] for x in content_types):
                 params['content_type'] = 'application/json'
                 params['content'] = json.dumps(data, cls=ApiJSONEncoder, serializer=serializer)
             else:
@@ -58,7 +63,7 @@ class GeneralResponse(HttpResponse):
                         'available': [
                             'application/json',
                         ],
-                        'asked': content_type
+                        'asked': ', '.join(content_types)
                     }
                 })
 
@@ -67,13 +72,15 @@ class GeneralResponse(HttpResponse):
 
 
 class SingleResponse(GeneralResponse):
-    def __init__(self, request, data=None, **kwargs):
+    def __init__(self, request, data=None, metadata: dict = None, **kwargs):
         if data is None:
             kwargs['status'] = HTTPStatus.NO_CONTENT
         else:
             data = {
                 'response': data,
             }
+            if metadata:
+                data['metadata'] = metadata
         super().__init__(request=request, data=data, **kwargs)
 
 

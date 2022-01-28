@@ -5,10 +5,10 @@ from django.db import models
 
 from apps.core.managers.user import UserManager
 
-from apps.core.models.base import BaseModel, UpdatedAtMixin, SoftDeleteMixin
+from apps.core.models.base import BaseModel
 
 
-class User(BaseModel, UpdatedAtMixin, SoftDeleteMixin, AbstractBaseUser, PermissionsMixin):
+class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     class Meta:
         app_label = 'core'
         db_table = 'users'

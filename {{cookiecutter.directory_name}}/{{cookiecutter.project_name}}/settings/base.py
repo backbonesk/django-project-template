@@ -25,6 +25,7 @@ if os.path.exists(ENV_FILE):
     load_dotenv(dotenv_path=ENV_FILE, verbose=True)
 
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
+INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
