@@ -4,6 +4,7 @@
 
 - Updated SecuredView
 - Updated authentication
+- Added Docker file
 
 ## 0.2.0 : TBD
 
