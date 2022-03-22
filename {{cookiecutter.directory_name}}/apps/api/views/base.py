@@ -1,47 +1,51 @@
 import hashlib
 import hmac
 from http import HTTPStatus
+from typing import Dict, Union
 
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import load_backend
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from django.views import View
 
 from apps.api.errors import ProblemDetailException
 from apps.core.models import ApiKey
+from apps.api.errors import UnauthorizedException
 
 
 class SecuredView(View):
     EXEMPT_AUTH = []
     EXEMPT_API_KEY = []
 
-    @staticmethod
-    def _authenticate(request: HttpRequest):
-        auth_header = request.headers.get('Authorization', '').split(' ')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._backends: Dict[str, BaseBackend] = {}
+        for schema, backend in settings.SECURED_VIEW_AUTHENTICATION_SCHEMAS.items():
+            self._backends[schema.lower()] = load_backend(backend)
+
+    def _authenticate(self, request) -> Union[AnonymousUser, AbstractBaseUser]:
+        auth_header = request.headers.get('Authorization', '')
+
+        if not auth_header:
+            return AnonymousUser()
+
+        auth_header = str(auth_header).split(' ')
+
         if len(auth_header) != 2:
-            raise ProblemDetailException(
-                request, _('Invalid or missing Authorization header'), status=HTTPStatus.UNAUTHORIZED,
-                extra_headers=(
-                    ('WWW-Authenticate', 'Bearer realm="pulsatio-api'),
-                )
-            )
+            raise UnauthorizedException(request, detail=_("Invalid or missing Authorization header"))
 
-        if auth_header[0] == 'Bearer':
-            auth_params = {
-                auth_header[0].lower(): auth_header[1]
-            }
-        else:
-            raise ProblemDetailException(
-                request,
-                _('Unauthorized'),
-                status=HTTPStatus.UNAUTHORIZED,
-                extra_headers=(
-                    ('WWW-Authenticate', 'Bearer realm="pulsatio-api'),
-                )
-            )
+        if not auth_header[0] in settings.SECURED_VIEW_AUTHENTICATION_SCHEMAS.keys():
+            raise UnauthorizedException(request, detail=_('Unsupported authentication schema'))
 
-        request.user = authenticate(request, **auth_params)
+        auth_params = {
+            auth_header[0].lower(): auth_header[1]
+        }
+
+        return self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
 
     def _check_api_key(self, request):
         api_key = request.headers.get('X-Apikey')
@@ -54,7 +58,16 @@ class SecuredView(View):
             )
 
         request.api_key = api_key_model
-        self._check_signature(request, api_key_model)
+
+        if api_key_model.platform == ApiKey.DevicePlatform.DEBUG and not settings.DEBUG:
+            raise ProblemDetailException(
+                request,
+                title=_('Invalid api key.'),
+                status=HTTPStatus.UNAUTHORIZED,
+                detail_type=ProblemDetailException.DetailType.INVALID_APIKEY
+            )
+        else:
+            self._check_signature(request, api_key_model)
 
         return None
 
@@ -93,6 +106,6 @@ class SecuredView(View):
             self._check_api_key(request)
 
         if request.method not in self.EXEMPT_AUTH:
-            self._authenticate(request)
+            request.user = self._authenticate(request)
 
         return super().dispatch(request, *args, **kwargs)

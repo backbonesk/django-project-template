@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 : 2022-03-17
+
+- Updated SecuredView
+- Updated authentication
+
 ## 0.2.0 : TBD
 
 - Model mixins merged back to the BaseModel

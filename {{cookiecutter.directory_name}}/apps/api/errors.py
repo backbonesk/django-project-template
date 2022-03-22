@@ -1,26 +1,32 @@
 import traceback
 from http import HTTPStatus
-from typing import Tuple
+from typing import Tuple, Optional
 
 import sentry_sdk
 from django.conf import settings
 from django.forms import BaseForm
-
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 
 class ProblemDetailException(Exception):
+    class DetailType(Enum):
+        INVALID_APIKEY = 'invalid-apikey'
+        INVALID_SIGNATURE = 'invalid-signature'
+        INVALID_CREDENTIALS = 'invalid-credentials'
+        INVALID_TOKEN = 'invalid-token'
+
     def __init__(
         self,
         request,
         title: str,
-        status: int = HTTPStatus.INTERNAL_SERVER_ERROR,
-        previous: Exception = None,
-        to_sentry: bool = False,
-        additional_data: dict = None,
-        detail_type: str = None,
-        detail: str = None,
-        extra_headers: Tuple[Tuple] = None
+        status: Optional[int] = HTTPStatus.INTERNAL_SERVER_ERROR,
+        previous: Optional[Exception] = None,
+        to_sentry: Optional[bool] = False,
+        additional_data: Optional[dict] = None,
+        detail_type: Optional[DetailType] = None,
+        detail: Optional[str] = None,
+        extra_headers: Optional[Tuple[Tuple]] = None
     ):
         super().__init__(title)
 
@@ -93,3 +99,16 @@ class ValidationException(ProblemDetailException):
         payload = super(ValidationException, self).payload
         payload['validation_errors'] = self._form.errors
         return payload
+
+
+class UnauthorizedException(ProblemDetailException):
+    def __init__(self, request, detail: Optional[str] = None):
+        super().__init__(
+            request,
+            _("Unauthorized"),
+            status=HTTPStatus.UNAUTHORIZED,
+            extra_headers=(
+                ('WWW-Authenticate', f'Bearer realm="{slugify(settings.INSTANCE_NAME)}"'),
+            ),
+            detail=detail
+        )
