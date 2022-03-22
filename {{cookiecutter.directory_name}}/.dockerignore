@@ -1,7 +1,7 @@
 .idea/
 venv/
 .github/
-evil_flowers_catalog.egg-info/
+{{cookiecutter.description}}.egg-info/
 .editorconfig
 .env
 .env.example
