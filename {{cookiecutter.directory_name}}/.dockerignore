@@ -1,7 +1,7 @@
 .idea/
 venv/
 .github/
-{{cookiecutter.description}}.egg-info/
+{{cookiecutter.project_name}}.egg-info/
 .editorconfig
 .env
 .env.example

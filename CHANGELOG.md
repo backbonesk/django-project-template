@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.3.1 : 2022-03-17
+## 0.3.0 : 2022-03-17
 
 - Updated SecuredView
 - Updated authentication
 - Added Docker file
 
-## 0.2.0 : TBD
+## 0.2.0 : 2022-01-28
 
 - Model mixins merged back to the BaseModel
 - Multiple column sort

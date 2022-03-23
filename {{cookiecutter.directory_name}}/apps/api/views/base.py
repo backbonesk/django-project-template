@@ -105,7 +105,6 @@ class SecuredView(View):
         if request.method not in self.EXEMPT_API_KEY:
             self._check_api_key(request)
 
-        if request.method not in self.EXEMPT_AUTH:
-            request.user = self._authenticate(request)
+        request.user = self._authenticate(request)
 
         return super().dispatch(request, *args, **kwargs)
