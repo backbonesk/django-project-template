@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models.base import BaseModel, UpdatedAtMixin
+from apps.core.models.base import BaseModel
 
 
-class ApiKey(BaseModel, UpdatedAtMixin):
+class ApiKey(BaseModel):
     class Meta:
         app_label = 'core'
         db_table = 'api_keys'

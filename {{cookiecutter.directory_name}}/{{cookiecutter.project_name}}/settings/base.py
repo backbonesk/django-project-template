@@ -19,6 +19,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
+PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
 
 # .env
 if os.path.exists(ENV_FILE):
@@ -127,8 +128,13 @@ PASSWORD_HASHERS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'apps.core.auth.BearerBackend'
+    'django.contrib.auth.backends.ModelBackend',
 ]
+
+SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
+    'Basic': 'apps.core.auth.BasicBackend',
+    'Bearer': 'apps.core.auth.BearerBackend'
+}
 
 AUTH_USER_MODEL = "core.User"
 

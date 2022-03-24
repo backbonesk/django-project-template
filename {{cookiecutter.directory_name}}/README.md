@@ -2,6 +2,15 @@
 
 {{cookiecutter.description}}
 
+
+## Database basic setup
+
+### Load data from fixtures to DB:
+`python manage.py loaddata [fixture ...]`
+
+### Dump data from DB to fixtures:
+`python manage.py dumpdata core.<ModelClassName> > apps/core/fixtures/<TableName>.json`
+
 ## Usage
 
 ### Class-based Views
