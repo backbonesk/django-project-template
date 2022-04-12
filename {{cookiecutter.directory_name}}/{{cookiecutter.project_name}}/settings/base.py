@@ -188,3 +188,8 @@ if os.getenv('SENTRY_DSN', False):
         request_bodies='always',
         before_send=before_send,
     )
+
+# Pagination
+PAGINATION = {
+    'DEFAULT_LIMIT': 10
+}
