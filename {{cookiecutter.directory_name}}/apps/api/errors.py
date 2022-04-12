@@ -1,4 +1,5 @@
 import traceback
+from enum import Enum
 from http import HTTPStatus
 from typing import Tuple, Optional
 
