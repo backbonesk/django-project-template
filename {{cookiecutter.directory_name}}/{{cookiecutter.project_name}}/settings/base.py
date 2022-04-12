@@ -19,12 +19,14 @@ from sentry_sdk.integrations.django import DjangoIntegration
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
+PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
 
 # .env
 if os.path.exists(ENV_FILE):
     load_dotenv(dotenv_path=ENV_FILE, verbose=True)
 
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
+INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -61,7 +63,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'apps.api.middleware.exceptions.ExceptionMiddleware',
-    'apps.api.middleware.signature.SignatureMiddleware',
 ]
 
 ROOT_URLCONF = '{{cookiecutter.project_name}}.urls'
@@ -125,6 +126,15 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
+    'Basic': 'apps.core.auth.BasicBackend',
+    'Bearer': 'apps.core.auth.BearerBackend'
+}
 
 AUTH_USER_MODEL = "core.User"
 

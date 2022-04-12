@@ -18,12 +18,16 @@ class ApiKey(BaseModel):
         IOS = 'ios', _('ios')
         DEBUG = 'debug', _('debug')
 
-    name = models.CharField(max_length=200, null=True)
+    name = models.CharField(max_length=200, null=True, verbose_name=_('apikey_name'))
     platform = models.CharField(
-        max_length=10, null=False, choices=DevicePlatform.choices, default=DevicePlatform.DEBUG
+        max_length=10,
+        null=False,
+        choices=DevicePlatform.choices,
+        default=DevicePlatform.DEBUG,
+        verbose_name=_('apikey_platform')
     )
-    secret = models.CharField(max_length=30, null=False)
-    is_active = models.BooleanField(default=False)
+    secret = models.CharField(max_length=30, null=False, verbose_name=_('apikey_secret'))
+    is_active = models.BooleanField(default=False, verbose_name=_('apikey_is_active'))
 
 
 __all__ = [

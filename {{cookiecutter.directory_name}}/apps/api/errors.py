@@ -1,29 +1,42 @@
 import traceback
 from http import HTTPStatus
+from typing import Tuple, Optional
 
 import sentry_sdk
 from django.conf import settings
-from django_api_forms.forms import Form
-
+from django.forms import BaseForm
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 
-class ApiException(Exception):
+class ProblemDetailException(Exception):
+    class DetailType(Enum):
+        INVALID_APIKEY = 'invalid-apikey'
+        INVALID_SIGNATURE = 'invalid-signature'
+        INVALID_CREDENTIALS = 'invalid-credentials'
+        INVALID_TOKEN = 'invalid-token'
+
     def __init__(
         self,
         request,
-        message: str,
-        status_code: int = HTTPStatus.INTERNAL_SERVER_ERROR,
-        previous: Exception = None,
-        to_sentry: bool = False,
-        additional_data: dict = None
+        title: str,
+        status: Optional[int] = HTTPStatus.INTERNAL_SERVER_ERROR,
+        previous: Optional[Exception] = None,
+        to_sentry: Optional[bool] = False,
+        additional_data: Optional[dict] = None,
+        detail_type: Optional[DetailType] = None,
+        detail: Optional[str] = None,
+        extra_headers: Optional[Tuple[Tuple]] = None
     ):
-        super().__init__(message)
+        super().__init__(title)
 
         self._request = request
-        self._status_code = status_code
-        self._message = message
+        self._title = title
+        self._status_code = status
         self._previous = previous
+        self._type = detail_type
+        self._detail = detail
+        self._extra_headers = extra_headers
 
         if additional_data:
             self._additional_data = additional_data
@@ -41,36 +54,61 @@ class ApiException(Exception):
         return self._request
 
     @property
-    def status_code(self) -> int:
-        return self._status_code
+    def title(self) -> str:
+        return self._title
 
     @property
-    def message(self) -> str:
-        return self._message
+    def status(self) -> int:
+        return self._status_code
 
     @property
     def previous(self) -> Exception:
         return self._previous
 
     @property
+    def type(self) -> str:
+        return self._type
+
+    @property
+    def detail(self) -> str:
+        return self._detail
+
+    @property
+    def extra_headers(self) -> Tuple[Tuple]:
+        return self._extra_headers
+
+    @property
     def payload(self) -> dict:
         result = {
-            'message': self.message,
-            'code': self.status_code
+            'title': self.title
         }
 
         if settings.DEBUG:
-            result['trace'] = traceback.format_exc().split("\n")
+            result['trace'] = traceback.format_exc().split('\n')
 
         return result
 
 
-class ValidationException(ApiException):
-    def __init__(self, request, form: Form):
-        super().__init__(request, _("Validation error!"), status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+class ValidationException(ProblemDetailException):
+    def __init__(self, request, form: BaseForm):
+        super().__init__(request, _('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
         self._form = form
 
     @property
     def payload(self) -> dict:
-        return self._form.errors
+        payload = super(ValidationException, self).payload
+        payload['validation_errors'] = self._form.errors
+        return payload
 
+
+class UnauthorizedException(ProblemDetailException):
+    def __init__(self, request, detail: Optional[str] = None):
+        super().__init__(
+            request,
+            _("Unauthorized"),
+            status=HTTPStatus.UNAUTHORIZED,
+            extra_headers=(
+                ('WWW-Authenticate', f'Bearer realm="{slugify(settings.INSTANCE_NAME)}"'),
+            ),
+            detail=detail
+        )
