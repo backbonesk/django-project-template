@@ -112,7 +112,7 @@ class ValidationResponse(GeneralResponse):
 
 
 class PaginationResponse(GeneralResponse):
-    def __init__(self, request, qs, ordering: Ordering = None, statistics: dict = None, **kwargs):
+    def __init__(self, request, qs, ordering: Ordering = None, extras: dict = None, **kwargs):
         kwargs.setdefault('content_type', 'application/json')
 
         # Ordering
@@ -151,8 +151,8 @@ class PaginationResponse(GeneralResponse):
             total = qs.count()
 
         data = {}
-        if statistics:
-            for key, item in statistics.items():
+        if extras:
+            for key, item in extras.items():
                 data[key] = item
 
         data['items'] = items
