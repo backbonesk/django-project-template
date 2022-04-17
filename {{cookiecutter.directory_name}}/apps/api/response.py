@@ -3,14 +3,16 @@ from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import Type, Union, List
 
-from django.core.paginator import Paginator
+from django.conf import settings
+from django.db import models
+from django.db.models import QuerySet
+from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
 from porcupine.base import Serializer
 
 from apps.api.encoders import ApiJSONEncoder
 from apps.api.errors import ValidationException, ProblemDetailException
-from apps.core.models.base import BaseModel
 
 
 @dataclass
@@ -44,7 +46,7 @@ class Ordering:
 
 
 class GeneralResponse(HttpResponse):
-    def __init__(self, request, data: Union[BaseModel, dict] = None, serializer: Type[Serializer] = None, **kwargs):
+    def __init__(self, request, data: Union[models.Model, dict] = None, serializer: Type[Serializer] = None, **kwargs):
         params = {}
         if data is not None:
             content_types = str(request.headers.get('accept', 'application/json'))
@@ -110,38 +112,56 @@ class ValidationResponse(GeneralResponse):
 
 
 class PaginationResponse(GeneralResponse):
-    def __init__(
-        self, request, qs, page: Union[int, None] = None, limit: Union[int, None] = None, ordering: Ordering = None,
-        **kwargs
-    ):
+    def __init__(self, request, qs, ordering: Ordering = None, extras: dict = None, **kwargs):
         kwargs.setdefault('content_type', 'application/json')
 
         # Ordering
-        ordering = ordering if ordering else Ordering.create_from_request(request)
-        qs = qs.order_by(str(ordering))
+        if isinstance(qs, QuerySet):
+            ordering = ordering if ordering else Ordering.create_from_request(request)
+            qs = qs.order_by(str(ordering))
 
-        if limit is None:
-            data = {
-                'items': qs,
-                'metadata': {
-                    'page': int(request.GET.get('page', 1)) if not page else page,
-                    'limit': None,
-                    'pages': 1,
-                    'total': qs.count()
-                }
-            }
-        else:
+        paginate = request.GET.get('paginate', 'true') == 'true'
+
+        if paginate:
+            limit = int(request.GET.get('limit', settings.PAGINATION['DEFAULT_LIMIT']))
+            page = int(request.GET.get('page', 1))
+
             paginator = Paginator(qs, limit)
 
-            data = {
-                'items': paginator.get_page(page),
-                'metadata': {
-                    'page': int(page),
-                    'limit': paginator.per_page,
-                    'pages': paginator.num_pages,
-                    'total': paginator.count
-                }
-            }
+            try:
+                paginator.validate_number(page)
+            except EmptyPage as e:
+                raise ProblemDetailException(
+                    request,
+                    title=_('Page not found'),
+                    status=HTTPStatus.NOT_FOUND,
+                    previous=e,
+                    detail_type='out_of_range',
+                    detail=_('That page contains no results')
+                )
+
+            items = paginator.get_page(page)
+            num_pages = paginator.num_pages
+            total = paginator.count
+        else:
+            limit = None
+            page = 1
+            items = qs
+            num_pages = 1
+            total = qs.count()
+
+        data = {}
+        if extras:
+            for key, item in extras.items():
+                data[key] = item
+
+        data['items'] = items
+        data['metadata'] = {
+            'page': page,
+            'limit': limit,
+            'pages': num_pages,
+            'total': total
+        }
 
         super().__init__(request, data, **kwargs)
 
