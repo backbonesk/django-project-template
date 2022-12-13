@@ -17,6 +17,7 @@ class ApiKey(BaseModel):
         ANDROID = 'android', _('android')
         IOS = 'ios', _('ios')
         DEBUG = 'debug', _('debug')
+        GITLAB = 'gitlab', _('gitlab')
 
     name = models.CharField(max_length=200, null=True, verbose_name=_('apikey_name'))
     platform = models.CharField(

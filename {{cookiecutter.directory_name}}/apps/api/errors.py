@@ -5,7 +5,6 @@ from typing import Tuple, Optional
 
 import sentry_sdk
 from django.conf import settings
-from django.forms import BaseForm
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
@@ -91,14 +90,14 @@ class ProblemDetailException(Exception):
 
 
 class ValidationException(ProblemDetailException):
-    def __init__(self, request, form: BaseForm):
+    def __init__(self, request, form):
         super().__init__(request, _('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
         self._form = form
 
     @property
     def payload(self) -> dict:
         payload = super(ValidationException, self).payload
-        payload['validation_errors'] = self._form.errors
+        payload['validation_errors'] = [error.to_dict() for error in self._form.errors]
         return payload
 
 

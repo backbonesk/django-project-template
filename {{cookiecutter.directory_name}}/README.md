@@ -27,6 +27,7 @@ from apps.api.views.base import SecuredView
 class ExampleClassBasedView(SecuredView):
     EXEMPT_AUTH = ['GET']
     EXEMPT_API_KEY = ['GET', 'POST']
+    REQUIRE_SUPERUSER = ['POST']
 
     def post(self, request):
         pass

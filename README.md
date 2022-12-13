@@ -43,7 +43,9 @@ cookiecutter gh:backbonesk/django-project-template
 3. `python -m venv venv`
 4. `poetry install && poetry update`
 5. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
-6. Take a coffee and celebrate life, you saved a plenty of time!
+6. Create user and remove `EXEMPT_AUTH` from `apps.api.views.user.UserManagement`
+7. When the project is set up, you can call `.../api/v1/status` to check if everything is up and running
+8. Take a coffee and celebrate life, you saved a plenty of time!
 
 ---
 Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2021

@@ -2,6 +2,7 @@ import hashlib
 import hmac
 from http import HTTPStatus
 from typing import Dict, Union
+from sentry_sdk import set_tag
 
 from django.conf import settings
 from django.contrib.auth import load_backend
@@ -20,6 +21,7 @@ from apps.api.errors import UnauthorizedException
 class SecuredView(View):
     EXEMPT_AUTH = []
     EXEMPT_API_KEY = []
+    REQUIRE_SUPERUSER = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,10 +30,21 @@ class SecuredView(View):
             self._backends[schema.lower()] = load_backend(backend)
 
     def _authenticate(self, request) -> Union[AnonymousUser, AbstractBaseUser]:
+        if request.method in self.EXEMPT_AUTH:
+            return AnonymousUser()
+
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return AnonymousUser()
+            raise ProblemDetailException(
+                request,
+                title=_('Invalid or missing Authorization header.'),
+                status=HTTPStatus.UNAUTHORIZED,
+                detail_type=ProblemDetailException.DetailType.INVALID_TOKEN,
+                extra_headers=(
+                    ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
+                )
+            )
 
         auth_header = str(auth_header).split(' ')
 
@@ -54,10 +67,12 @@ class SecuredView(View):
             api_key_model = ApiKey.objects.get(pk=api_key, is_active=True)
         except ApiKey.DoesNotExist:
             raise ProblemDetailException(
-                request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED
+                request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
+                detail_type=ProblemDetailException.DetailType.INVALID_APIKEY
             )
 
         request.api_key = api_key_model
+        set_tag('apikey.platform', request.api_key.platform)
 
         if api_key_model.platform == ApiKey.DevicePlatform.DEBUG and not settings.DEBUG:
             raise ProblemDetailException(
@@ -76,7 +91,7 @@ class SecuredView(View):
         signature = request.headers.get('X-Signature', '')
 
         # Do not check signature for GitLab API keys, DEBUG API keys and DEBUG environment
-        if api_key.platform in [ApiKey.DevicePlatform.GILTAB, ApiKey.DevicePlatform.DEBUG] or settings.DEBUG:
+        if api_key.platform in [ApiKey.DevicePlatform.GITLAB, ApiKey.DevicePlatform.DEBUG] or settings.DEBUG:
             return None
 
         message = f"{request.body.decode('utf-8')}:{request.path}"
@@ -90,13 +105,14 @@ class SecuredView(View):
             raise ProblemDetailException(
                 request,
                 _('Invalid signature.'),
-                status=HTTPStatus.UNAUTHORIZED,
+                status=HTTPStatus.BAD_REQUEST,
                 to_sentry=True,
                 additional_data={
                     'received': signature,
                     'expected': signature_check,
                     'message': message,
-                }
+                },
+                detail_type=ProblemDetailException.DetailType.INVALID_SIGNATURE
             )
 
         return None
@@ -106,5 +122,11 @@ class SecuredView(View):
             self._check_api_key(request)
 
         request.user = self._authenticate(request)
+
+        if request.method in self.REQUIRE_SUPERUSER:
+            if not request.user.is_superuser:
+                raise ProblemDetailException(
+                    request, _('Insufficient permissions'), status=HTTPStatus.FORBIDDEN,
+                )
 
         return super().dispatch(request, *args, **kwargs)

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import datetime
 from pathlib import Path
 
 import sentry_sdk
@@ -20,6 +21,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
+BUILD_FILE = Path(f"{BASE_DIR}/BUILD.txt")
+VERSION_FILE = Path(f"{BASE_DIR}/VERSION.txt")
 
 # .env
 if os.path.exists(ENV_FILE):
@@ -27,6 +30,18 @@ if os.path.exists(ENV_FILE):
 
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
 INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
+
+if BUILD_FILE.exists():
+    with open(BUILD_FILE) as f:
+        BUILD = f.readline().replace('\n', '')
+else:
+    BUILD = datetime.datetime.now().isoformat()
+
+if VERSION_FILE.exists():
+    with open(VERSION_FILE) as f:
+        VERSION = f.readline().replace('\n', '')
+else:
+    VERSION = 'dev'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -128,16 +143,17 @@ PASSWORD_HASHERS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'apps.core.auth.backends.BaseBackend',
 ]
 
 SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
-    'Basic': 'apps.core.auth.BasicBackend',
-    'Bearer': 'apps.core.auth.BearerBackend'
+    'Basic': 'apps.core.auth.backends.BasicBackend',
+    'Bearer': 'apps.core.auth.backends.BearerBackend'
 }
 
-AUTH_USER_MODEL = "core.User"
+TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
+AUTH_USER_MODEL = "core.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/

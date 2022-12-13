@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 : 2022-12-13
+
+- Updated SecuredView
+- Updated authentication
+- Added user CRUD
+
 ## 0.3.0 : 2022-03-17
 
 - Updated SecuredView

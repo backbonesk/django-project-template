@@ -75,9 +75,12 @@ class GeneralResponse(HttpResponse):
 
 class SingleResponse(GeneralResponse):
     def __init__(self, request, data=None, metadata: dict = None, **kwargs):
-        if data is None:
+        if 'status' not in kwargs and data is None:
             kwargs['status'] = HTTPStatus.NO_CONTENT
-        else:
+        elif 'status' not in kwargs and data:
+            kwargs['status'] = HTTPStatus.OK
+
+        if data:
             data = {
                 'response': data,
             }
