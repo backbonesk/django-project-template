@@ -146,6 +146,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
+    'Basic': 'apps.core.auth.BasicBackend',
+    'Bearer': 'apps.core.auth.BearerBackend'
+}
+
 TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
 AUTH_USER_MODEL = "core.User"
