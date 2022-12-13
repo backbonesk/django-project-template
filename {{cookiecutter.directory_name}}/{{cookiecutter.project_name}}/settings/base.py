@@ -143,13 +143,8 @@ PASSWORD_HASHERS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'apps.core.auth.backends.BaseBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
-
-SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
-    'Basic': 'apps.core.auth.backends.BasicBackend',
-    'Bearer': 'apps.core.auth.backends.BearerBackend'
-}
 
 TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
