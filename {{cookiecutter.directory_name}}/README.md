@@ -9,7 +9,7 @@
 `python manage.py loaddata [fixture ...]`
 
 ### Dump data from DB to fixtures:
-`python manage.py dumpdata core.<ModelClassName> > apps/core/fixtures/<TableName>.json`
+`python manage.py dumpdata core.<ModelClassName> --indent 4 > apps/core/fixtures/<TableName>.json`
 
 ## Usage
 

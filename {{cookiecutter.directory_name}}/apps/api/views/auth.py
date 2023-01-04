@@ -26,7 +26,7 @@ class UserAuth(SecuredView):
 
         user = authenticate(request, email=form.cleaned_data['email'], password=form.cleaned_data['password'])
 
-        if user.is_anonymous:
+        if not user:
             raise ProblemDetailException(
                 request,
                 title=_('Incorrect email or password.'),

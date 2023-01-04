@@ -66,7 +66,7 @@ class ProblemDetailException(Exception):
         return self._previous
 
     @property
-    def type(self) -> str:
+    def type(self) -> Optional[DetailType]:
         return self._type
 
     @property
