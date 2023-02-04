@@ -54,6 +54,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = []
 
+IS_ENABLED_ANONYMOUS_USER = False
+
 
 # Application definition
 

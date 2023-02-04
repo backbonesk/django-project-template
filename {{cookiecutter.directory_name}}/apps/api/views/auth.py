@@ -40,3 +40,14 @@ class UserAuth(SecuredView):
         )
 
         return SingleResponse(request, token, status=HTTPStatus.OK, serializer=TokenSerializer.Base)
+
+
+class LogoutManager(SecuredView):
+    @transaction.atomic
+    def delete(self, request):
+        token = getattr(request, "token")
+
+        if token:
+            token.hard_delete()
+
+        return SingleResponse(request, status=HTTPStatus.NO_CONTENT)

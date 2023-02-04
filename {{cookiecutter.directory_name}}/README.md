@@ -11,6 +11,18 @@
 ### Dump data from DB to fixtures:
 `python manage.py dumpdata core.<ModelClassName> --indent 4 > apps/core/fixtures/<TableName>.json`
 
+### Dump data from DB to fixtures:
+`python manage.py dumpdata core.<ModelClassName> --indent 4 > apps/core/fixtures/<TableName>.json`
+
+### Dump schema
+#### MAC OS
+`pg_dump --file "/Users/<USER>/<PATH>/<FILE_NAME>.sql" --host "<HOST>" --port "<PORT>" --username "<USERNAME>" --verbose --format=c --blobs --no-owner --section=pre-data --section=data --section=post-data --no-privileges --no-tablespaces --no-unlogged-table-data --no-comments "<DB_NAME>"`
+
+### Restore schema
+#### MAC OS
+`pg_restore --host "<HOST>" --port "<PORT>" --username "<USERNAME>" --no-password --dbname "<DB_NAME>" --verbose "/Users/<USER>/<PATH>/<FILE_NAME>.sql"`
+
+
 ## Usage
 
 ### Class-based Views

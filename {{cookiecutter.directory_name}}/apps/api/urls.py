@@ -6,6 +6,7 @@ from apps.api.views import status, user, auth
 urlpatterns = [
     # Authentication
     path('auth', auth.UserAuth.as_view(), name='auth-token-login'),
+    path('logout', auth.LogoutManager.as_view(), name='auth-token-logout'),
 
     # User
     path('users', user.UserManagement.as_view()),

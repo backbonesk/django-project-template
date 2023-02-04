@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 : 2023-01-04
+## 0.4.0 : 2023-02-04
 
 - Updated SecuredView
 - Updated authentication
