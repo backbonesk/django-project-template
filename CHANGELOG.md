@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.4.0 : 2023-02-04
+## 0.4.0 : 2023-03-16
 
 - Updated SecuredView
 - Updated authentication
 - Added user CRUD
+- Added request to serializers kwargs
 
 ## 0.3.0 : 2022-03-17
 
