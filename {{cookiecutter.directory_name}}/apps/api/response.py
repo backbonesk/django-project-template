@@ -24,7 +24,7 @@ class Ordering:
         columns = []
         aliases = aliases or {}
 
-        for column in request.GET.get('order_by', 'created_at').split(','):
+        for column in request.GET.getlist('order_by', ['created_at']):
             column_name = column[1:] if column.startswith("-") else column
             if column_name in aliases.keys():
                 alias_value = aliases[column_name]
@@ -121,7 +121,7 @@ class PaginationResponse(GeneralResponse):
         # Ordering
         if isinstance(qs, QuerySet):
             ordering = ordering if ordering else Ordering.create_from_request(request)
-            qs = qs.order_by(str(ordering))
+            qs = qs.order_by(*ordering.columns)
 
         paginate = request.GET.get('paginate', 'true') == 'true'
 
