@@ -1,11 +1,11 @@
 # Changelog
 
-## 0.4.0 : 2023-03-16
+## 0.4.0 : 2024-01-09
 
 - Updated SecuredView
 - Updated authentication
 - Added user CRUD
-- Added request to serializers kwargs
+- Introduces pydantic
 
 ## 0.3.0 : 2022-03-17
 
