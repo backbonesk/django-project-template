@@ -2,7 +2,6 @@ import hashlib
 import hmac
 from http import HTTPStatus
 from typing import Dict, Union
-from sentry_sdk import set_tag
 
 from django.conf import settings
 from django.contrib.auth import load_backend
@@ -12,10 +11,11 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from django.views import View
+from sentry_sdk import set_tag
 
-from apps.api.errors import ProblemDetailException
-from apps.core.models import ApiKey
+from apps.api.errors import ProblemDetailException, DetailType
 from apps.api.errors import UnauthorizedException
+from apps.core.models import ApiKey
 
 
 class SecuredView(View):
@@ -34,8 +34,17 @@ class SecuredView(View):
             return AnonymousUser()
 
         auth_header = request.headers.get('Authorization', '')
+
         if not auth_header:
-            return AnonymousUser()
+            raise ProblemDetailException(
+                request,
+                title=_('Invalid or missing Authorization header.'),
+                status=HTTPStatus.UNAUTHORIZED,
+                detail_type=DetailType.INVALID_TOKEN,
+                extra_headers=(
+                    ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
+                )
+            )
 
         auth_header = str(auth_header).split(' ')
 
@@ -49,7 +58,21 @@ class SecuredView(View):
             auth_header[0].lower(): auth_header[1]
         }
 
-        return self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
+        user = self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
+
+        if not settings.IS_ENABLED_ANONYMOUS_USER:
+            if user.is_anonymous:
+                raise ProblemDetailException(
+                    request,
+                    title=_('Invalid or missing Authorization header.'),
+                    status=HTTPStatus.UNAUTHORIZED,
+                    detail_type=DetailType.INVALID_TOKEN,
+                    extra_headers=(
+                        ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
+                    )
+                )
+
+        return user
 
     def _check_api_key(self, request):
         api_key = request.headers.get('X-Apikey')
@@ -59,7 +82,7 @@ class SecuredView(View):
         except ApiKey.DoesNotExist:
             raise ProblemDetailException(
                 request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
-                detail_type=ProblemDetailException.DetailType.INVALID_APIKEY
+                detail_type=DetailType.INVALID_APIKEY
             )
 
         request.api_key = api_key_model
@@ -70,7 +93,7 @@ class SecuredView(View):
                 request,
                 title=_('Invalid api key.'),
                 status=HTTPStatus.UNAUTHORIZED,
-                detail_type=ProblemDetailException.DetailType.INVALID_APIKEY
+                detail_type=DetailType.INVALID_APIKEY
             )
         else:
             self._check_signature(request, api_key_model)
@@ -82,7 +105,7 @@ class SecuredView(View):
         signature = request.headers.get('X-Signature', '')
 
         # Do not check signature for DEBUG API keys and DEBUG environment
-        if api_key.platform == ApiKey.DevicePlatform.DEBUG or settings.DEBUG:
+        if api_key.platform in [ApiKey.DevicePlatform.DEBUG] or settings.DEBUG:
             return None
 
         message = f"{request.body.decode('utf-8')}:{request.path}"
@@ -103,7 +126,7 @@ class SecuredView(View):
                     'expected': signature_check,
                     'message': message,
                 },
-                detail_type=ProblemDetailException.DetailType.INVALID_SIGNATURE
+                detail_type=DetailType.INVALID_SIGNATURE
             )
 
         return None
@@ -113,17 +136,8 @@ class SecuredView(View):
             self._check_api_key(request)
 
         request.user = self._authenticate(request)
-        if not settings.IS_ENABLED_ANONYMOUS_USER:
-            if request.user.is_anonymous:
-                raise ProblemDetailException(
-                    request,
-                    title=_('Invalid or missing Authorization header.'),
-                    status=HTTPStatus.UNAUTHORIZED,
-                    detail_type=ProblemDetailException.DetailType.INVALID_TOKEN,
-                    extra_headers=(
-                        ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
-                    )
-                )
+        if request.user.is_authenticated:
+            set_tag('user.id', request.user.id)
 
         if request.method in self.REQUIRE_SUPERUSER:
             if not request.user.is_superuser:

@@ -1,0 +1,257 @@
+UserManagement:
+  post:
+    tags:
+      - User
+    summary: Create a new user
+    parameters:
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/ContentType"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../requests/forms/user.yaml#/UserForm.Create"
+    responses:
+      '201':
+        description: Summary user response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                response:
+                  $ref: "../responses/serializers/user.yaml#/UserSerializer.Detail"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+  get:
+    tags:
+      - User
+    summary: List user in the system
+    parameters:
+      - $ref: "../requests/parameters.yaml#/Pagination"
+      - $ref: "../requests/parameters.yaml#/Page"
+      - $ref: "../requests/parameters.yaml#/Limit"
+      - $ref: "../requests/parameters.yaml#/OrderBy"
+      - $ref: "../requests/parameters.yaml#/Query"
+
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/AcceptLanguage"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+
+      - $ref: "../requests/filters/user.yaml#/Name"
+      - $ref: "../requests/filters/user.yaml#/Surname"
+    responses:
+      '201':
+        description: List of summary user response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: "../responses/serializers/user.yaml#/UserSerializer.Base"
+                metadata:
+                  type: object
+                  $ref: "../responses/metadata.yaml#/Metadata"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+
+
+UserDetail:
+  get:
+    tags:
+      - User
+    summary: Get detail of one specific user
+    parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+          example: "3e163423-5cd9-4853-91e8-16b88044a917"
+        required: true
+        description: UUID of the user to get
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    responses:
+      '201':
+        description: Detail user response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                response:
+                  $ref: "../responses/serializers/user.yaml#/UserSerializer.Detail"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '404':
+        $ref: "../responses/errors.yaml#/NotFound"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+  put:
+    tags:
+      - User
+    summary: Update one specific user
+    parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+          example: "3e163423-5cd9-4853-91e8-16b88044a917"
+        required: true
+        description: UUID of the user to get
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/ContentType"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../requests/forms/user.yaml#/UserForm.Update"
+    responses:
+      '200':
+        description: Summary user response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                response:
+                  $ref: "../responses/serializers/user.yaml#/UserSerializer.Detail"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '404':
+        $ref: "../responses/errors.yaml#/NotFound"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+  delete:
+    tags:
+      - User
+    summary: Delete one specific user
+    parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+          example: "3e163423-5cd9-4853-91e8-16b88044a917"
+        required: true
+        description: UUID of the user to get
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    responses:
+      '204':
+        description: The user was deleted successfully
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '404':
+        $ref: "../responses/errors.yaml#/NotFound"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+
+
+UserMe:
+  get:
+    tags:
+      - User
+    summary: Get detail of actual logged in user
+    parameters:
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    responses:
+      '201':
+        description: Base user response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                response:
+                  $ref: "../responses/serializers/user.yaml#/UserSerializer.Me"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '404':
+        $ref: "../responses/errors.yaml#/NotFound"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+
+
+ChangePasswordDetail:
+  patch:
+    tags:
+      - Password operations
+      - User
+    summary: Change password
+    parameters:
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../requests/forms/user.yaml#/UserForm.ChangePasswordForm"
+    responses:
+      '204':
+        description: No Content

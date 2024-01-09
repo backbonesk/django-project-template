@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 import datetime
+import tomllib
 from pathlib import Path
 
 import sentry_sdk
@@ -19,7 +20,6 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
-LOG_DIR = os.path.join(BASE_DIR, 'logs')
 PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
 BUILD_FILE = Path(f"{BASE_DIR}/BUILD.txt")
 VERSION_FILE = Path(f"{BASE_DIR}/VERSION.txt")
@@ -37,17 +37,20 @@ if BUILD_FILE.exists():
 else:
     BUILD = datetime.datetime.now().isoformat()
 
+with open("pyproject.toml", "rb") as f:
+    _META = tomllib.load(f)
+
 if VERSION_FILE.exists():
     with open(VERSION_FILE) as f:
         VERSION = f.readline().replace('\n', '')
 else:
-    VERSION = 'dev'
+    VERSION = _META["tool"]["poetry"]["version"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'oqjwv$mob^(qwlil^8ub8%a@o5@a!^x0j1*^*1m@y46k%(6$+w'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -119,6 +122,11 @@ DATABASES = {
 }
 
 
+# Django object checker
+
+OBJECT_CHECKERS_MODULE = 'apps.core.checkers'
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -155,6 +163,8 @@ SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
 
 TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
+RECOVERY_TIME_EXPIRATION = 1
+
 AUTH_USER_MODEL = "core.User"
 
 # Internationalization
@@ -167,8 +177,6 @@ TIME_ZONE = 'UTC'
 DATETIME_INPUT_FORMATS = ('%Y-%m-%dT%H:%M:%S%z',)
 
 USE_I18N = True
-
-USE_L10N = True
 
 USE_TZ = True
 
@@ -203,7 +211,6 @@ if os.getenv('SENTRY_DSN', False):
         integrations=[DjangoIntegration()],
         attach_stacktrace=True,
         send_default_pii=True,
-        request_bodies='always',
         before_send=before_send,
     )
 
@@ -211,3 +218,13 @@ if os.getenv('SENTRY_DSN', False):
 PAGINATION = {
     'DEFAULT_LIMIT': 10
 }
+
+
+# Notifications
+EMAIL_SENDER_NAME = os.getenv('EMAIL_SENDER_NAME')
+EMAIL_IMAP_USER = os.getenv('EMAIL_IMAP_USER')
+
+
+# Templates
+EMAIL_REGISTRATION_PATH = '_emails/registration.html'
+EMAIL_RECOVERY_PATH = '_emails/password_recovery.html'

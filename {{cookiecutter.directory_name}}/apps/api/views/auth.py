@@ -1,12 +1,10 @@
 from http import HTTPStatus
 
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db import transaction
-from django.utils.translation import gettext as _
-from django.utils import timezone
 
-from apps.api.errors import ValidationException, ProblemDetailException
+from apps.api.errors import UnauthorizedException
+from apps.api.errors import ValidationException
 from apps.api.forms.token import TokenForm
 from apps.api.response import SingleResponse
 from apps.api.views.base import SecuredView
@@ -27,19 +25,11 @@ class UserAuth(SecuredView):
         user = authenticate(request, email=form.cleaned_data['email'], password=form.cleaned_data['password'])
 
         if not user:
-            raise ProblemDetailException(
-                request,
-                title=_('Incorrect email or password.'),
-                status=HTTPStatus.UNAUTHORIZED,
-                detail_type=ProblemDetailException.DetailType.INVALID_CREDENTIALS
-            )
+            raise UnauthorizedException(request)
 
-        token = Token.objects.create(
-            user_id=user.pk,
-            expires_at=timezone.now() + settings.TOKEN_EXPIRATION
-        )
+        token = Token.objects.create(user=user)
 
-        return SingleResponse(request, token, status=HTTPStatus.OK, serializer=TokenSerializer.Base)
+        return SingleResponse(request, data=TokenSerializer.Base.model_validate(token), status=HTTPStatus.CREATED)
 
 
 class LogoutManager(SecuredView):
@@ -50,4 +40,4 @@ class LogoutManager(SecuredView):
         if token:
             token.hard_delete()
 
-        return SingleResponse(request, status=HTTPStatus.NO_CONTENT)
+        return SingleResponse(request)

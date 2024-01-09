@@ -1,0 +1,26 @@
+Email:
+    in: query
+    name: email
+    schema:
+      type: string
+      example: "morty@transcoder.sk"
+    required: false
+    description: User filter on email.
+
+Name:
+    in: query
+    name: name
+    schema:
+      type: string
+      example: "Rick"
+    required: false
+    description: User filter on name.
+
+Surname:
+    in: query
+    name: surname
+    schema:
+      type: string
+      example: "Morty"
+    required: false
+    description: User filter on surname.

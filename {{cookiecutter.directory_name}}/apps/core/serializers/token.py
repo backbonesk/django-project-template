@@ -1,12 +1,10 @@
 from uuid import UUID
 
-from porcupine.base import Serializer
+from pydantic import Field
+
+from apps.core.serializers import Serializer
 
 
 class TokenSerializer:
     class Base(Serializer):
-        token: UUID
-
-        @staticmethod
-        def resolve_token(token, **kwargs) -> UUID:
-            return token.id
+        id: UUID = Field(serialization_alias='token')

@@ -1,0 +1,44 @@
+Limit:
+  in: query
+  name: limit
+  schema:
+    type: integer
+    example: 10
+  required: false
+  description: Specifying the number of items to be returned per page.
+
+Page:
+  in: query
+  name: page
+  schema:
+    type: integer
+    example: 1
+  required: false
+  description: Specifying which page should be returned.
+
+Pagination:
+  in: query
+  name: paginate
+  schema:
+    type: boolean
+    example: false
+  required: false
+  description: Require true if you want to specify page and limit otherwise it will use default values.
+
+OrderBy:
+  in: query
+  name: order_by
+  schema:
+    type: string
+    example: "-created_at"
+  required: false
+  description: The rule by which the records will be ordered.
+
+Query:
+  in: query
+  name: query
+  schema:
+    type: string
+    example: "Search"
+  required: false
+  description: The full text query filter.

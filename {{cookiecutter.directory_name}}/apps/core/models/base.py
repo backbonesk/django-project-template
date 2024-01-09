@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import models
+from django.db.models.functions import Now
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 
@@ -14,7 +15,7 @@ class BaseModel(models.Model):
         abstract = True
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now())
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
 

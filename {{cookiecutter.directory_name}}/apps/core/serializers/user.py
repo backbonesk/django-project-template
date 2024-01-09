@@ -1,7 +1,8 @@
+from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
-from porcupine.base import Serializer
+from apps.core.serializers import Serializer
 
 
 class UserSerializer:
@@ -10,11 +11,11 @@ class UserSerializer:
         email: str
         name: str
         surname: str
-        last_login: datetime = None
+        last_login: Optional[datetime]
         created_at: datetime
 
     class Detail(Base):
-        pass
+        is_active: bool
 
     class Me(Detail):
         pass

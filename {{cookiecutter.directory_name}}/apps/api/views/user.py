@@ -1,18 +1,22 @@
 from http import HTTPStatus
 from uuid import UUID
 
+from django.conf import settings
 from django.db import transaction
+from django.urls import reverse
 from django.utils.translation import gettext as _
-
+from object_checker.base_object_checker import has_object_permission
 
 from apps.api.views.base import SecuredView
 from apps.api.errors import ValidationException, ProblemDetailException
 from apps.api.filters.user import UserFilter
 from apps.api.forms.user import UserForm
 from apps.api.response import SingleResponse, PaginationResponse
+from apps.core.models.recovery_code import RecoveryCode
 
 from apps.core.models.user import User
 from apps.core.serializers.user import UserSerializer
+from apps.core.services.email_notification import NotificationEmailService
 
 
 class UserManagement(SecuredView):
@@ -25,14 +29,24 @@ class UserManagement(SecuredView):
         if not form.is_valid():
             raise ValidationException(request, form)
 
-        password = form.cleaned_data['password']
-
         user = User()
         form.populate(user)
-        user.set_password(password)
+        user.set_unusable_password()
         user.save()
 
-        return SingleResponse(request, user, serializer=UserSerializer.Detail, status=HTTPStatus.CREATED)
+        recovery_code = RecoveryCode.objects.create(user=user)
+
+        NotificationEmailService.create(
+            recipients=[f'{user.get_full_name()} <{user.email}>'],
+            subject=_('Registration'),
+            content={
+                'recovery_code': recovery_code,
+                'login_url': f'{settings.BASE_URL}{reverse("password-change")}',
+            },
+            template=settings.EMAIL_REGISTRATION_PATH,
+        ).send_email()
+
+        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user), status=HTTPStatus.CREATED)
 
     def get(self, request):
         users = UserFilter(request.GET, queryset=User.objects.all(), request=request).qs
@@ -53,7 +67,7 @@ class UserDetail(SecuredView):
     def get(self, request, user_id: UUID):
         user = self._get_user(request, user_id)
 
-        return SingleResponse(request, user, serializer=UserSerializer.Detail)
+        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user))
 
     @transaction.atomic
     def put(self, request, user_id: UUID):
@@ -72,11 +86,12 @@ class UserDetail(SecuredView):
         form.populate(user)
         user.save()
 
-        return SingleResponse(request, user, serializer=UserSerializer.Detail)
+        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user))
 
     @transaction.atomic
     def delete(self, request, user_id: UUID):
         user = self._get_user(request, user_id)
+        user.is_active = False
         user.delete()
 
         return SingleResponse(request)
@@ -84,4 +99,31 @@ class UserDetail(SecuredView):
 
 class UserMe(SecuredView):
     def get(self, request):
-        return SingleResponse(request, request.user, serializer=UserSerializer.Me)
+        return SingleResponse(request, data=UserSerializer.Me.model_validate(request.user))
+
+
+class ChangePasswordDetail(SecuredView):
+    @staticmethod
+    def _get_user(request, user_id: UUID) -> User:
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist as e:
+            raise ProblemDetailException(request, _('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
+
+        if not has_object_permission('check_user_get', user=request.user, obj=user):
+            raise ProblemDetailException(request, _('Permission denied.'), status=HTTPStatus.FORBIDDEN)
+
+        return user
+
+    def patch(self, request, user_id: UUID):
+        form = UserForm.ChangePasswordForm.create_from_request(request)
+
+        if not form.is_valid():
+            raise ValidationException(request, form)
+
+        user = self._get_user(request, user_id)
+
+        user.set_password(form.cleaned_data['new_password'])
+        user.save()
+
+        return SingleResponse(request)
