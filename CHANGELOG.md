@@ -1,9 +1,10 @@
 # Changelog
 
-## 0.4.0 : 2024-01-09
+## 0.4.0 : 2024-01-25
 
 - Updated SecuredView
 - Updated authentication
+- Updated Dockerfile
 - Added user CRUD
 - Introduces pydantic
 
