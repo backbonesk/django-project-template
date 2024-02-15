@@ -1,0 +1,135 @@
+AcceptEncoding:
+  in: header
+  name: Accept-Encoding
+  schema:
+    type: string
+  examples:
+    gzip:
+      value: "gzip"
+  required: false
+  description: The Accept-Encoding request HTTP header advertises which content encoding, usually a compression algorithm, the client is able to understand.
+
+ContentType:
+  in: header
+  name: Content-Type
+  schema:
+    type: string
+  examples:
+    json:
+      value: "application/json"
+    msgpack:
+      value: "application/msgpack"
+  required: false
+  description: Specifying type of the body content in the request.
+
+XApiKey:
+  in: header
+  name: X-ApiKey
+  schema:
+    type: string
+    format: uuid
+    example: "{{api_key}}"
+  required: true
+  description: Contains specific unique key only known by trusted entities.
+
+XSignature:
+  in: header
+  name: X-Signature
+  schema:
+    type: string
+    example: "{{signature}}"
+  required: true
+  description: |
+    Signature is generated from **HMAC** with digesmod **SHA256**:
+    - **Key**: (provided secret)
+    - **Message**: combined as `"{request.body}:{request.path}"`
+
+    **Python** code example:
+
+    ```python
+    import hashlib
+    import hmac
+
+    body = '{"name":"Arthur Dent","callback_url":"https://customer-callback-url.com/verification",' \
+           '"document":{"front_image":"img","back_image":"img","capture_method":"mobile",' \
+           '"document_type":"dl"},"face":"img","aml":true}'
+    path = '/api/v1/verify/'
+    api_secret = 'SecretFromMyApiKey'
+
+    message = f"{body}:{path}"
+    signature = hmac.new(
+        key=api_secret.encode('utf-8'),
+        msg=message.encode('utf-8'),
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    assert signature == '3dec4f23b9bdaee44233e100ee8f202949f689329cd8936b56f15bbec269d471'
+
+    print(signature)
+    ```
+
+    **JavaScript** code example:
+
+    ```javascript
+    const body = `{"name":"Arthur Dent","callback_url":"https://customer-callback-url.com/verification",
+                  "document":{"front_image":"img","back_image":"img","capture_method":"mobile",
+                  "document_type":"dl"},"face":"img","aml":true}`;
+    const path = "/api/v1/verify/";
+    const apiSecret = "SecretFromMyApiKey";
+
+    const message = `${body}:/${path}`;
+    const signature = CryptoJS.HmacSHA256(message, apiSecret).toString(CryptoJS.enc.Hex);
+
+    assert(signature === "3dec4f23b9bdaee44233e100ee8f202949f689329cd8936b56f15bbec269d471");
+
+    console.log("Signature: " + signature);
+    ```
+
+Authorization:
+  in: header
+  name: Authorization
+  schema:
+    type: string
+    example: "Bearer {{token}}"
+  required: true
+  description: Contains unique user token, which represents logged user authenticity.
+
+Accept:
+  in: header
+  name: Accept
+  schema:
+    type: string
+  examples:
+    json:
+      value: "application/json"
+    msgpack:
+      value: "application/msgpack"
+  required: false
+  description: Specifiing accepted response body content type.
+
+AcceptLanguage:
+  in: header
+  name: Accept-Language
+  schema:
+    type: string
+    example: "en"
+  required: false
+  description: Specifiing which languages the client is able to understand, and which locale variant is preferred.
+
+NotificationToken:
+  in: header
+  name: Notification-Token
+  schema:
+    type: string
+    example:  "{{notification_token}}"
+  required: false
+  description: Specifiing notification token only required for iOS users.
+
+UserAgent:
+  in: header
+  name: User-Agent
+  schema:
+    type: string
+    example: "{{cookiecutter.project_name}}/0.1.1 (iPhone 8; iOS 12.0.0)"
+  required: true
+  description: Specifiing app version, device and model.

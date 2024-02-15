@@ -1,0 +1,38 @@
+UserSerializer.Base:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      example: "3e163423-5cd9-4853-91e8-16b88044a917"
+      nullable: true
+    email:
+      type: string
+      example: "morty@email.com"
+    name:
+      type: string
+      example: "Morty"
+      nullable: true
+    surname:
+      type: string
+      example: "Sanchez"
+      nullable: true
+    last_login:
+      type: string
+      format: date-time
+      nullable: true
+      example: "2022-02-13T15:44:04.627Z"
+    created_at:
+      type: string
+      format: date-time
+      example: "2022-02-13T15:44:04.627Z"
+
+
+UserSerializer.Detail:
+  allOf:
+    - $ref: '#/UserSerializer.Base'
+
+
+UserSerializer.Me:
+  allOf:
+    - $ref: '#/UserSerializer.Detail'

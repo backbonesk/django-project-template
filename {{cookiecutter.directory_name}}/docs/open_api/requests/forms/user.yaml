@@ -1,0 +1,35 @@
+UserForm.Update:
+  type: object
+  properties:
+    email:
+      type: string
+      example: "morty@email.com"
+    name:
+      type: string
+      example: "Mort"
+    surname:
+      type: string
+      example: "Platypus"
+  required:
+    - email
+    - name
+    - surname
+
+
+UserForm.Create:
+  allOf:
+    - $ref: '#/UserForm.Update'
+
+
+UserForm.ChangePasswordForm:
+  type: object
+  properties:
+    new_password:
+      type: string
+      example: "oldGoodPassword"
+    old_password:
+      type: string
+      example: "newBetterPassword"
+  required:
+    - new_password
+    - old_password

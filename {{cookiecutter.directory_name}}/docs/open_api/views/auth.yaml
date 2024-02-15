@@ -1,0 +1,61 @@
+AuthManagement:
+  post:
+    tags:
+      - Auth
+    summary: Login with user's credentials.
+    parameters:
+      - $ref: "../requests/headers.yaml#/Accept"
+      - $ref: "../requests/headers.yaml#/ContentType"
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../requests/forms/auth.yaml#/AuthForm"
+    responses:
+      '200':
+        description: Token response.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                response:
+                  $ref: "../responses/serializers/token.yaml#/TokenSerializer.Base"
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"
+
+
+LogoutManagement:
+  delete:
+    tags:
+      - Auth
+    summary: Logout user.
+    parameters:
+      - $ref: "../requests/headers.yaml#/XApiKey"
+      - $ref: "../requests/headers.yaml#/XSignature"
+      - $ref: "../requests/headers.yaml#/Authorization"
+      - $ref: "../requests/headers.yaml#/NotificationToken"
+      - $ref: "../requests/headers.yaml#/ContentType"
+      - $ref: "../requests/headers.yaml#/UserAgent"
+    responses:
+      '204':
+        description: Logout response.
+      '401':
+        $ref: "../responses/errors.yaml#/Unauthorized"
+      '403':
+        $ref: "../responses/errors.yaml#/Forbidden"
+      '422':
+        $ref: "../responses/errors.yaml#/UnprocessableEntity"
+      '500':
+        $ref: "../responses/errors.yaml#/InternalServerError"

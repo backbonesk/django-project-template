@@ -1,0 +1,7 @@
+TokenSerializer.Base:
+  type: object
+  properties:
+    token:
+      type: string
+      format: uuid
+      example: "3e163423-5cd9-4853-91e8-16b88044a917"

@@ -1,0 +1,146 @@
+BadRequest:
+  description: Request data are not in the valid form
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "Invalid kind"
+          type:
+            type: string
+            example: "bad-request"
+          trace:
+            example: "Traceback (most recent call last): ..."
+
+UnprocessableEntity:
+  description: Request form is not valid
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "Validation error!"
+          type:
+            type: string
+            example: "unprocessable-entity"
+          trace:
+            example: "Traceback (most recent call last): ..."
+
+Unauthorized:
+  description: |
+    Invalid or missing Authorization header, invalid api key, invalid signature or invalid credentials.
+    We distinguish these types of exceptions according to the **type** attribute in the response:
+    - **invalid-apikey**: Invalid or missing api key in the request header.
+    - **invalid-signature**: Invalid or missing signature in the request header.
+    - **invalid-token**: Invalid or missing token in the request header.
+    - **invalid-credentials**: Invalid or missing credentials in the request body.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "Invalid api key."
+          type:
+            type: string
+            example: "invalid-apikey"
+          trace:
+            type: string
+            example: "Traceback (most recent call last): ..."
+      examples:
+        InvalidApiKey:
+          value:
+            title: "Invalid api key."
+            type: "invalid-apikey"
+            trace: "Traceback (most recent call last): ..."
+        InvalidSignature:
+          value:
+            title: "Invalid signature."
+            type: "invalid-signature"
+            trace: "Traceback (most recent call last): ..."
+        InvalidToken:
+          value:
+            title: "Invalid or missing Authorization header."
+            type: "invalid-token"
+            trace: "Traceback (most recent call last): ..."
+        InvalidCredentials:
+          value:
+            title: "Incorrect email or password."
+            type: "invalid-credentials"
+            trace: "Traceback (most recent call last): ..."
+
+Forbidden:
+  description: Unauthorized access to this current endpoint
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "Unauthorized."
+          type:
+            type: string
+            example: "unauthorized"
+          trace:
+            type: string
+            example: "Traceback (most recent call last): ..."
+
+InternalServerError:
+  description: Internal server error
+
+NotFound:
+  description: Nothing matches the given URI
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "Entity does not exists."
+          type:
+            type: string
+            example: "not-found"
+          trace:
+            type: string
+            example: "Traceback (most recent call last): ..."
+
+Conflict:
+  description: HTTP request is valid, but the current state of the server prevents it from being executed
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            example: "Entity's name already exists."
+          type:
+            type: string
+            example: "conflict"
+          trace:
+            type: string
+            example: "Traceback (most recent call last): ..."
+
+PaymentRequired:
+  description: HTTP request is valid, but payment could not be processed.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            example: "You don not have enough money."
+          type:
+            type: string
+            example: "payment-required"
+          trace:
+            type: string
+            example: "Traceback (most recent call last): ..."
