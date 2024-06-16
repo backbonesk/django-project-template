@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.api.views import user, auth, password
+from apps.api.views import status, user, auth, password
 
 
 urlpatterns = [
@@ -16,4 +16,7 @@ urlpatterns = [
     # Password Recovery
     path('password/recovery', password.PasswordRecoveryManagement.as_view(), name='password-recovery'),
     path('password/change', password.ChangePasswordManagement.as_view(), name='password-change'),
+
+    # Status
+    path("status", status.StatusManagement.as_view(), name='status'),
 ]

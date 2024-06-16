@@ -19,15 +19,11 @@ from django.urls import path, include
 from django.views.static import serve
 
 from apps.api import urls as api_urlpatterns
-from apps.api.views import status
 
 
 urlpatterns = []
 urlpatterns += [
     path(r'api/v1/', include(api_urlpatterns)),
-
-    # Status
-    path("status", status.StatusManagement.as_view(), name='status'),
 ]
 
 if settings.DEBUG:
