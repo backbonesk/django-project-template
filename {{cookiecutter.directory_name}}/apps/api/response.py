@@ -166,7 +166,7 @@ class PaginationResponse(GeneralResponse):
                 list(items),
                 from_attributes=True,
                 context={
-                    'user': request.user
+                    'request': request
                 }
             ),
             metadata=PaginationModel(
