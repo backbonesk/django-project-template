@@ -87,14 +87,22 @@ class GeneralResponse(HttpResponse):
 
 
 class SingleResponse(GeneralResponse):
-    def __init__(self, request, data=None, **kwargs):
+    def __init__(self, request, data=None, serializer: Type[BaseModel] = None, **kwargs):
         if 'status' not in kwargs and data is None:
             kwargs['status'] = HTTPStatus.NO_CONTENT
         elif 'status' not in kwargs and data:
             kwargs['status'] = HTTPStatus.OK
 
         if data:
-            data = SingleResponseModel(response=data)
+            data = SingleResponseModel(
+                response=RootModel[serializer].model_validate(
+                    data,
+                    from_attributes=True,
+                    context={
+                        'request': request
+                    }
+                )
+            )
         super().__init__(request=request, data=data, **kwargs)
 
 
