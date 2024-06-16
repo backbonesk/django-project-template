@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional, List, Type, TypeVar
+from apps.api.encoders import ApiJSONEncoder
 
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage
@@ -68,7 +69,10 @@ class GeneralResponse(HttpResponse):
 
             if any(x in ['*/*', 'application/json'] for x in content_types):
                 params['content_type'] = 'application/json'
-                params['content'] = data.model_dump_json(by_alias=True)
+                if isinstance(data, dict):
+                    params['content'] = json.dumps(data, cls=ApiJSONEncoder)
+                else:
+                    params['content'] = data.model_dump_json(by_alias=True)
             else:
                 params['content_type'] = 'application/json'
                 params['status'] = HTTPStatus.NOT_ACCEPTABLE
