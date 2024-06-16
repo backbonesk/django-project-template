@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional, List, Type, TypeVar
+from apps.api.encoders import ApiJSONEncoder
 
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage
@@ -68,7 +69,10 @@ class GeneralResponse(HttpResponse):
 
             if any(x in ['*/*', 'application/json'] for x in content_types):
                 params['content_type'] = 'application/json'
-                params['content'] = data.model_dump_json(by_alias=True)
+                if isinstance(data, dict):
+                    params['content'] = json.dumps(data, cls=ApiJSONEncoder)
+                else:
+                    params['content'] = data.model_dump_json(by_alias=True)
             else:
                 params['content_type'] = 'application/json'
                 params['status'] = HTTPStatus.NOT_ACCEPTABLE
@@ -87,14 +91,22 @@ class GeneralResponse(HttpResponse):
 
 
 class SingleResponse(GeneralResponse):
-    def __init__(self, request, data=None, **kwargs):
+    def __init__(self, request, data=None, serializer: Type[BaseModel] = None, **kwargs):
         if 'status' not in kwargs and data is None:
             kwargs['status'] = HTTPStatus.NO_CONTENT
         elif 'status' not in kwargs and data:
             kwargs['status'] = HTTPStatus.OK
 
         if data:
-            data = SingleResponseModel(response=data)
+            data = SingleResponseModel(
+                response=RootModel[serializer].model_validate(
+                    data,
+                    from_attributes=True,
+                    context={
+                        'request': request
+                    }
+                )
+            )
         super().__init__(request=request, data=data, **kwargs)
 
 
@@ -154,7 +166,7 @@ class PaginationResponse(GeneralResponse):
                 list(items),
                 from_attributes=True,
                 context={
-                    'user': request.user
+                    'request': request
                 }
             ),
             metadata=PaginationModel(

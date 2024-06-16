@@ -29,7 +29,7 @@ class UserAuth(SecuredView):
 
         token = Token.objects.create(user=user)
 
-        return SingleResponse(request, data=TokenSerializer.Base.model_validate(token), status=HTTPStatus.CREATED)
+        return SingleResponse(request, data=token, serializer=TokenSerializer.Base, status=HTTPStatus.CREATED)
 
 
 class LogoutManager(SecuredView):

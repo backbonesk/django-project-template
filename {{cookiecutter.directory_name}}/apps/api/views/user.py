@@ -46,7 +46,7 @@ class UserManagement(SecuredView):
             template=settings.EMAIL_REGISTRATION_PATH,
         ).send_email()
 
-        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user), status=HTTPStatus.CREATED)
+        return SingleResponse(request, data=user, serializer=UserSerializer.Detail, status=HTTPStatus.CREATED)
 
     def get(self, request):
         users = UserFilter(request.GET, queryset=User.objects.all(), request=request).qs
@@ -67,7 +67,7 @@ class UserDetail(SecuredView):
     def get(self, request, user_id: UUID):
         user = self._get_user(request, user_id)
 
-        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user))
+        return SingleResponse(request, data=user, serializer=UserSerializer.Detail)
 
     @transaction.atomic
     def put(self, request, user_id: UUID):
@@ -86,7 +86,7 @@ class UserDetail(SecuredView):
         form.populate(user)
         user.save()
 
-        return SingleResponse(request, data=UserSerializer.Detail.model_validate(user))
+        return SingleResponse(request, data=user, serializer=UserSerializer.Detail)
 
     @transaction.atomic
     def delete(self, request, user_id: UUID):
@@ -99,7 +99,7 @@ class UserDetail(SecuredView):
 
 class UserMe(SecuredView):
     def get(self, request):
-        return SingleResponse(request, data=UserSerializer.Me.model_validate(request.user))
+        return SingleResponse(request, data=request.user, serializer=UserSerializer.Me)
 
 
 class ChangePasswordDetail(SecuredView):
