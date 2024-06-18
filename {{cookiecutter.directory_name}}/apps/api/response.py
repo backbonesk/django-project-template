@@ -97,7 +97,7 @@ class SingleResponse(GeneralResponse):
         elif 'status' not in kwargs and data:
             kwargs['status'] = HTTPStatus.OK
 
-        if data:
+        if data and serializer:
             data = SingleResponseModel(
                 response=RootModel[serializer].model_validate(
                     data,
