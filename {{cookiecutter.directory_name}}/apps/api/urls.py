@@ -1,12 +1,11 @@
 from django.urls import path
 
-from apps.api.views import status, user, auth, password
+from apps.api.views import status, user, token, password
 
 
 urlpatterns = [
     # Authentication
-    path('auth', auth.UserAuth.as_view(), name='auth-token-login'),
-    path('logout', auth.LogoutManager.as_view(), name='auth-token-logout'),
+    path('token', token.TokenManagement.as_view(), name='token'),
 
     # User
     path('users', user.UserManagement.as_view()),
@@ -15,7 +14,7 @@ urlpatterns = [
 
     # Password Recovery
     path('password/recovery', password.PasswordRecoveryManagement.as_view(), name='password-recovery'),
-    path('password/change', password.ChangePasswordManagement.as_view(), name='password-change'),
+    path('password/change', password.PasswordChangeManagement.as_view(), name='password-change'),
 
     # Status
     path("status", status.StatusManagement.as_view(), name='status'),

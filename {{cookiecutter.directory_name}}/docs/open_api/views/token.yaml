@@ -1,7 +1,7 @@
-AuthManagement:
+TokenManagement:
   post:
     tags:
-      - Auth
+      - Token
     summary: Login with user's credentials.
     parameters:
       - $ref: "../requests/headers.yaml#/Accept"
@@ -15,7 +15,7 @@ AuthManagement:
       content:
         application/json:
           schema:
-            $ref: "../requests/forms/auth.yaml#/AuthForm"
+            $ref: "../requests/forms/token.yaml#/TokenForm"
     responses:
       '200':
         description: Token response.
@@ -39,7 +39,7 @@ AuthManagement:
 LogoutManagement:
   delete:
     tags:
-      - Auth
+      - Token
     summary: Logout user.
     parameters:
       - $ref: "../requests/headers.yaml#/XApiKey"

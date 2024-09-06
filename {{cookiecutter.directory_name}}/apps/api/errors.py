@@ -24,7 +24,6 @@ class ProblemDetail(BaseModel):
     title: str
     type: Optional[DetailType] = None
     detail: Optional[str] = None
-    trace: Optional[List[str]] = None
 
 
 class ValidationErrorItem(BaseModel):
@@ -105,7 +104,6 @@ class ProblemDetailException(Exception):
             title=self.title,
             type=self.type,
             detail=self.detail,
-            trace=traceback.format_exc().split('\n') if settings.DEBUG else None
         )
 
 

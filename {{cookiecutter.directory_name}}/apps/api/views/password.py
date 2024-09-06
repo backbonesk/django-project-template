@@ -50,7 +50,7 @@ class PasswordRecoveryManagement(SecuredView):
         return SingleResponse(request)
 
 
-class ChangePasswordManagement(SecuredView):
+class PasswordChangeManagement(SecuredView):
     EXEMPT_AUTH = ['POST']
 
     @transaction.atomic()

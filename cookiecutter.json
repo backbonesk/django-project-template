@@ -3,6 +3,8 @@
   "project_name": "another_awesome_project",
   "description": "Another awesome project which will save the word!",
   "_copy_without_render": [
-        "*.html", "*.yaml"
+    "*.html",
+    "*.yaml",
+    "*.json"
   ]
 }

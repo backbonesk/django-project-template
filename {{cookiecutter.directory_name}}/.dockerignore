@@ -5,5 +5,4 @@ venv/
 .editorconfig
 .env
 .env.example
-.flake8
 .gitignore

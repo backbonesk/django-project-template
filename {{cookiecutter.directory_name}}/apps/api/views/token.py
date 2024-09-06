@@ -12,7 +12,7 @@ from apps.core.models import Token
 from apps.core.serializers.token import TokenSerializer
 
 
-class UserAuth(SecuredView):
+class TokenManagement(SecuredView):
     EXEMPT_AUTH = ['POST']
 
     @transaction.atomic
@@ -31,8 +31,6 @@ class UserAuth(SecuredView):
 
         return SingleResponse(request, data=token, serializer=TokenSerializer.Base, status=HTTPStatus.CREATED)
 
-
-class LogoutManager(SecuredView):
     @transaction.atomic
     def delete(self, request):
         token = getattr(request, "token")
