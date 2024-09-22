@@ -11,7 +11,8 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - Hard/soft delete for models
 - Custom `User` model
 - Response objects (`SingleResponse`, `ValidationResponse`)
-- Custom JSON encoder prepared for [porcupine-python](https://github.com/zurek11/porcupine-python) serializer
+- [pydantic](https://github.com/pydantic/pydantic) response serialisation
+- Custom JSON encoder
 - Configuration using `.env` files
 - [Sentry](https://sentry.io/welcome) integration
 - Dependency management using [poetry](https://python-poetry.org/)
@@ -43,7 +44,9 @@ cookiecutter gh:backbonesk/django-project-template
 3. `python -m venv venv`
 4. `poetry install && poetry update`
 5. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
-6. Take a coffee and celebrate life, you saved a plenty of time!
+6. You are supposed to create superuser using `python manage.py createsuperuser`
+7. When the project is set up, you can call `{baseurl}/status` to check if everything is up and running
+8. Take a coffee and celebrate life, you saved a plenty of time!
 
 ---
-Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2021
+Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2024

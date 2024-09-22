@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import datetime
+import tomllib
 from pathlib import Path
 
 import sentry_sdk
@@ -18,8 +20,8 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
-LOG_DIR = os.path.join(BASE_DIR, 'logs')
 PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
+BUILD_FILE = Path(f"{BASE_DIR}/BUILD.txt")
 
 # .env
 if os.path.exists(ENV_FILE):
@@ -28,16 +30,29 @@ if os.path.exists(ENV_FILE):
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
 INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
 
+if BUILD_FILE.exists():
+    with open(BUILD_FILE) as f:
+        BUILD = f.readline().replace('\n', '')
+else:
+    BUILD = datetime.datetime.now().isoformat()
+
+with open("pyproject.toml", "rb") as f:
+    _META = tomllib.load(f)
+
+VERSION = _META["tool"]["poetry"]["version"]
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'oqjwv$mob^(qwlil^8ub8%a@o5@a!^x0j1*^*1m@y46k%(6$+w'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 ALLOWED_HOSTS = []
+
+IS_ENABLED_ANONYMOUS_USER = False
 
 
 # Application definition
@@ -102,6 +117,11 @@ DATABASES = {
 }
 
 
+# Django object checker
+
+OBJECT_CHECKERS_MODULE = 'apps.core.checkers'
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -136,8 +156,11 @@ SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
     'Bearer': 'apps.core.auth.BearerBackend'
 }
 
-AUTH_USER_MODEL = "core.User"
+TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
+RECOVERY_TIME_EXPIRATION = 1
+
+AUTH_USER_MODEL = "core.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -149,8 +172,6 @@ TIME_ZONE = 'UTC'
 DATETIME_INPUT_FORMATS = ('%Y-%m-%dT%H:%M:%S%z',)
 
 USE_I18N = True
-
-USE_L10N = True
 
 USE_TZ = True
 
@@ -185,7 +206,6 @@ if os.getenv('SENTRY_DSN', False):
         integrations=[DjangoIntegration()],
         attach_stacktrace=True,
         send_default_pii=True,
-        request_bodies='always',
         before_send=before_send,
     )
 
@@ -193,3 +213,13 @@ if os.getenv('SENTRY_DSN', False):
 PAGINATION = {
     'DEFAULT_LIMIT': 10
 }
+
+
+# Notifications
+EMAIL_SENDER_NAME = os.getenv('EMAIL_SENDER_NAME')
+EMAIL_IMAP_USER = os.getenv('EMAIL_IMAP_USER')
+
+
+# Templates
+EMAIL_REGISTRATION_PATH = '_emails/registration.html'
+EMAIL_RECOVERY_PATH = '_emails/password_recovery.html'

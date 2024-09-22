@@ -1,33 +1,54 @@
-import traceback
 from enum import Enum
 from http import HTTPStatus
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Any
 
 import sentry_sdk
 from django.conf import settings
-from django.forms import BaseForm
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
+from django_api_forms.forms import Form
+from pydantic import Field
+
+from apps.core.serializers import Serializer
+
+
+class DetailType(Enum):
+    OUT_OF_RANGE = '/out-of-range'
+    NOT_FOUND = '/not-found'
+    VALIDATION_ERROR = '/validation-error'
+    CONFLICT = '/conflict'
+    INVALID_APIKEY = '/invalid-api-key'
+    INVALID_SIGNATURE = '/invalid-signature'
+
+
+class ProblemDetail(Serializer):
+    title: str
+    type: Optional[DetailType] = Field(default=None)
+    detail: Optional[str] = Field(default=None)
+
+
+class ValidationErrorItem(Serializer):
+    code: Optional[str] = Field(default=None)
+    message: str
+    path: Optional[List[Any]] = Field(default=None)
+
+
+class ValidationError(ProblemDetail):
+    validation_errors: List[ValidationErrorItem]
 
 
 class ProblemDetailException(Exception):
-    class DetailType(Enum):
-        INVALID_APIKEY = 'invalid-apikey'
-        INVALID_SIGNATURE = 'invalid-signature'
-        INVALID_CREDENTIALS = 'invalid-credentials'
-        INVALID_TOKEN = 'invalid-token'
-
     def __init__(
         self,
         request,
         title: str,
-        status: Optional[int] = HTTPStatus.INTERNAL_SERVER_ERROR,
-        previous: Optional[Exception] = None,
+        status: int = HTTPStatus.INTERNAL_SERVER_ERROR,
+        previous: Optional[BaseException] = None,
         to_sentry: Optional[bool] = False,
         additional_data: Optional[dict] = None,
         detail_type: Optional[DetailType] = None,
         detail: Optional[str] = None,
-        extra_headers: Optional[Tuple[Tuple]] = None
+        extra_headers: Optional[Tuple[Tuple]] = ()
     ):
         super().__init__(title)
 
@@ -63,11 +84,11 @@ class ProblemDetailException(Exception):
         return self._status_code
 
     @property
-    def previous(self) -> Exception:
+    def previous(self) -> BaseException:
         return self._previous
 
     @property
-    def type(self) -> str:
+    def type(self) -> DetailType:
         return self._type
 
     @property
@@ -79,37 +100,40 @@ class ProblemDetailException(Exception):
         return self._extra_headers
 
     @property
-    def payload(self) -> dict:
-        result = {
-            'title': self.title
-        }
-
-        if settings.DEBUG:
-            result['trace'] = traceback.format_exc().split('\n')
-
-        return result
-
-
-class ValidationException(ProblemDetailException):
-    def __init__(self, request, form: BaseForm):
-        super().__init__(request, _('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
-        self._form = form
-
-    @property
-    def payload(self) -> dict:
-        payload = super(ValidationException, self).payload
-        payload['validation_errors'] = self._form.errors
-        return payload
+    def payload(self) -> ProblemDetail:
+        return ProblemDetail(
+            title=self.title,
+            type=self.type,
+            detail=self.detail,
+        )
 
 
 class UnauthorizedException(ProblemDetailException):
     def __init__(self, request, detail: Optional[str] = None):
         super().__init__(
             request,
-            _("Unauthorized"),
+            _('Unauthorized'),
             status=HTTPStatus.UNAUTHORIZED,
             extra_headers=(
                 ('WWW-Authenticate', f'Bearer realm="{slugify(settings.INSTANCE_NAME)}"'),
             ),
             detail=detail
+        )
+
+
+class ValidationException(ProblemDetailException):
+    def __init__(self, request, form: Form):
+        super().__init__(request, _('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
+        self._form = form
+
+    @property
+    def payload(self) -> ValidationError:
+        return ValidationError(
+            title=_('Invalid request parameters'),
+            type=DetailType.VALIDATION_ERROR,
+            validation_errors=[ValidationErrorItem(
+                code=item.code,
+                message=item.message % (item.params or ()),
+                path=getattr(item, 'path', ['$body'])
+            ) for item in self._form.errors],
         )

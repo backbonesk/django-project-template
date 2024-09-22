@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 : 2024-06-09
+
+- Updated SecuredView
+- Updated authentication
+- Updated Dockerfile
+- Added user CRUD
+- Introduces pydantic
+- Introduces black
+- Removed flake8
+- Django 5.0
+- Added Postman template
+
 ## 0.3.0 : 2022-03-17
 
 - Updated SecuredView

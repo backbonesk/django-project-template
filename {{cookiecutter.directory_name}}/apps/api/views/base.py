@@ -11,15 +11,17 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from django.views import View
+from sentry_sdk import set_tag
 
-from apps.api.errors import ProblemDetailException
-from apps.core.models import ApiKey
+from apps.api.errors import ProblemDetailException, DetailType
 from apps.api.errors import UnauthorizedException
+from apps.core.models import ApiKey
 
 
 class SecuredView(View):
     EXEMPT_AUTH = []
     EXEMPT_API_KEY = []
+    REQUIRE_SUPERUSER = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,10 +30,13 @@ class SecuredView(View):
             self._backends[schema.lower()] = load_backend(backend)
 
     def _authenticate(self, request) -> Union[AnonymousUser, AbstractBaseUser]:
+        if request.method in self.EXEMPT_AUTH:
+            return AnonymousUser()
+
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return AnonymousUser()
+            raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
 
         auth_header = str(auth_header).split(' ')
 
@@ -45,7 +50,13 @@ class SecuredView(View):
             auth_header[0].lower(): auth_header[1]
         }
 
-        return self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
+        user = self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
+
+        if not settings.IS_ENABLED_ANONYMOUS_USER:
+            if user.is_anonymous:
+                raise UnauthorizedException(request, detail=_("Invalid or missing Authorization header"))
+
+        return user
 
     def _check_api_key(self, request):
         api_key = request.headers.get('X-Apikey')
@@ -54,17 +65,19 @@ class SecuredView(View):
             api_key_model = ApiKey.objects.get(pk=api_key, is_active=True)
         except ApiKey.DoesNotExist:
             raise ProblemDetailException(
-                request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED
+                request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
+                detail_type=DetailType.INVALID_APIKEY
             )
 
         request.api_key = api_key_model
+        set_tag('apikey.platform', request.api_key.platform)
 
         if api_key_model.platform == ApiKey.DevicePlatform.DEBUG and not settings.DEBUG:
             raise ProblemDetailException(
                 request,
                 title=_('Invalid api key.'),
                 status=HTTPStatus.UNAUTHORIZED,
-                detail_type=ProblemDetailException.DetailType.INVALID_APIKEY
+                detail_type=DetailType.INVALID_APIKEY
             )
         else:
             self._check_signature(request, api_key_model)
@@ -75,8 +88,8 @@ class SecuredView(View):
     def _check_signature(request: HttpRequest, api_key: ApiKey):
         signature = request.headers.get('X-Signature', '')
 
-        # Do not check signature for GitLab API keys, DEBUG API keys and DEBUG environment
-        if api_key.platform in [ApiKey.DevicePlatform.GILTAB, ApiKey.DevicePlatform.DEBUG] or settings.DEBUG:
+        # Do not check signature for DEBUG API keys and DEBUG environment
+        if api_key.platform in [ApiKey.DevicePlatform.DEBUG] or settings.DEBUG:
             return None
 
         message = f"{request.body.decode('utf-8')}:{request.path}"
@@ -90,13 +103,14 @@ class SecuredView(View):
             raise ProblemDetailException(
                 request,
                 _('Invalid signature.'),
-                status=HTTPStatus.UNAUTHORIZED,
+                status=HTTPStatus.BAD_REQUEST,
                 to_sentry=True,
                 additional_data={
                     'received': signature,
                     'expected': signature_check,
                     'message': message,
-                }
+                },
+                detail_type=DetailType.INVALID_SIGNATURE
             )
 
         return None
@@ -106,5 +120,13 @@ class SecuredView(View):
             self._check_api_key(request)
 
         request.user = self._authenticate(request)
+        if request.user.is_authenticated:
+            set_tag('user.id', request.user.id)
+
+        if request.method in self.REQUIRE_SUPERUSER:
+            if not request.user.is_superuser:
+                raise ProblemDetailException(
+                    request, _('Insufficient permissions'), status=HTTPStatus.FORBIDDEN,
+                )
 
         return super().dispatch(request, *args, **kwargs)

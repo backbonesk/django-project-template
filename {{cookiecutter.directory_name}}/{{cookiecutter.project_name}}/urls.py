@@ -20,6 +20,7 @@ from django.views.static import serve
 
 from apps.api import urls as api_urlpatterns
 
+
 urlpatterns = []
 urlpatterns += [
     path(r'api/v1/', include(api_urlpatterns)),

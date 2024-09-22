@@ -1,0 +1,23 @@
+Metadata:
+  type: object
+  properties:
+    page:
+      type: integer
+      example: 1
+    limit:
+      type: integer
+      example: 1
+    pages:
+      type: integer
+      example: 100
+    total:
+      type: integer
+      example: 100
+
+
+Metadata.Example:
+  metadata:
+    page: 1
+    limit: 3
+    pages: 5
+    total: 14

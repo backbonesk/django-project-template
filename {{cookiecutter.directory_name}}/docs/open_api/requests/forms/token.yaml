@@ -1,0 +1,12 @@
+TokenForm:
+  type: object
+  properties:
+    email:
+      type: string
+      example: "morty@email.com"
+    password:
+      type: string
+      example: "password123"
+  required:
+    - email
+    - password
