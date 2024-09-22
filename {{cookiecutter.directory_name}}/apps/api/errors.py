@@ -1,14 +1,15 @@
-import traceback
 from enum import Enum
 from http import HTTPStatus
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Any
 
 import sentry_sdk
 from django.conf import settings
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django_api_forms.forms import Form
-from pydantic import BaseModel
+from pydantic import Field
+
+from apps.core.serializers import Serializer
 
 
 class DetailType(Enum):
@@ -20,16 +21,16 @@ class DetailType(Enum):
     INVALID_SIGNATURE = '/invalid-signature'
 
 
-class ProblemDetail(BaseModel):
+class ProblemDetail(Serializer):
     title: str
-    type: Optional[DetailType] = None
-    detail: Optional[str] = None
+    type: Optional[DetailType] = Field(default=None)
+    detail: Optional[str] = Field(default=None)
 
 
-class ValidationErrorItem(BaseModel):
-    code: Optional[str] = None
+class ValidationErrorItem(Serializer):
+    code: Optional[str] = Field(default=None)
     message: str
-    path: Optional[List[str]] = None
+    path: Optional[List[Any]] = Field(default=None)
 
 
 class ValidationError(ProblemDetail):

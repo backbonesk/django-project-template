@@ -1,6 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
+from pydantic import Field
 
 from apps.core.serializers import Serializer
 
@@ -11,7 +12,7 @@ class UserSerializer:
         email: str
         name: str
         surname: str
-        last_login: Optional[datetime]
+        last_login: Optional[datetime] = Field(default=None)
         created_at: datetime
 
     class Detail(Base):

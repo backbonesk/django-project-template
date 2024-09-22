@@ -36,15 +36,7 @@ class SecuredView(View):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            raise ProblemDetailException(
-                request,
-                title=_('Invalid or missing Authorization header.'),
-                status=HTTPStatus.UNAUTHORIZED,
-                detail_type=DetailType.INVALID_TOKEN,
-                extra_headers=(
-                    ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
-                )
-            )
+            raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
 
         auth_header = str(auth_header).split(' ')
 
@@ -62,15 +54,7 @@ class SecuredView(View):
 
         if not settings.IS_ENABLED_ANONYMOUS_USER:
             if user.is_anonymous:
-                raise ProblemDetailException(
-                    request,
-                    title=_('Invalid or missing Authorization header.'),
-                    status=HTTPStatus.UNAUTHORIZED,
-                    detail_type=DetailType.INVALID_TOKEN,
-                    extra_headers=(
-                        ('WWW-Authenticate', f'Bearer realm="{settings.INSTANCE_NAME}'),
-                    )
-                )
+                raise UnauthorizedException(request, detail=_("Invalid or missing Authorization header"))
 
         return user
 

@@ -2,31 +2,32 @@ import json
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional, List, Type, TypeVar
-from apps.api.encoders import ApiJSONEncoder
 
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.translation import gettext as _
-from pydantic import BaseModel, RootModel
+from pydantic import RootModel, Field
 
+from apps.api.encoders import ApiJSONEncoder
 from apps.api.errors import ProblemDetailException, DetailType, ValidationError, ProblemDetail
+from apps.core.serializers import Serializer
 
 ResponseType = TypeVar('ResponseType')
 
 
-class SingleResponseModel(BaseModel):
+class SingleResponseModel(Serializer):
     response: ResponseType
 
 
-class PaginationModel(BaseModel):
+class PaginationModel(Serializer):
     page: int
-    limit: Optional[int]
+    limit: Optional[int] = Field(default=None)
     pages: int
     total: int
 
 
-class PaginationResponseModel(BaseModel):
+class PaginationResponseModel(Serializer):
     items: RootModel[ResponseType]
     metadata: PaginationModel
 
@@ -76,22 +77,24 @@ class GeneralResponse(HttpResponse):
             else:
                 params['content_type'] = 'application/json'
                 params['status'] = HTTPStatus.NOT_ACCEPTABLE
-                params['content'] = json.dumps({
-                    'message': _('Not Acceptable'),
-                    'metadata': {
-                        'available': [
-                            'application/json',
-                        ],
-                        'asked': ', '.join(content_types)
+                params['content'] = json.dumps(
+                    {
+                        'message': _('Not Acceptable'),
+                        'metadata': {
+                            'available': [
+                                'application/json',
+                            ],
+                            'asked': ', '.join(content_types)
+                        }
                     }
-                })
+                )
 
         kwargs.update(params)
         super().__init__(**kwargs)
 
 
 class SingleResponse(GeneralResponse):
-    def __init__(self, request, data=None, serializer: Type[BaseModel] = None, **kwargs):
+    def __init__(self, request, data=None, serializer: Type[Serializer] = None, **kwargs):
         if 'status' not in kwargs and data is None:
             kwargs['status'] = HTTPStatus.NO_CONTENT
         elif 'status' not in kwargs and data:
@@ -124,7 +127,7 @@ class ValidationResponse(GeneralResponse):
 
 
 class PaginationResponse(GeneralResponse):
-    def __init__(self, request, qs, serializer: Type[BaseModel], ordering: Ordering = None, **kwargs):
+    def __init__(self, request, qs, serializer: Type[Serializer], ordering: Ordering = None, **kwargs):
         kwargs.setdefault('content_type', 'application/json')
 
         # Ordering
@@ -161,21 +164,23 @@ class PaginationResponse(GeneralResponse):
             num_pages = 1
             total = qs.count()
 
-        super().__init__(request, PaginationResponseModel(
-            items=RootModel[List[serializer]].model_validate(
-                list(items),
-                from_attributes=True,
-                context={
-                    'request': request
-                }
-            ),
-            metadata=PaginationModel(
-                page=page,
-                limit=limit,
-                pages=num_pages,
-                total=total
-            )
-        ), **kwargs)
+        super().__init__(
+            request, PaginationResponseModel(
+                items=RootModel[List[serializer]].model_validate(
+                    list(items),
+                    from_attributes=True,
+                    context={
+                        'request': request
+                    }
+                ),
+                metadata=PaginationModel(
+                    page=page,
+                    limit=limit,
+                    pages=num_pages,
+                    total=total
+                )
+            ), **kwargs
+        )
 
 
 class SeeOtherResponse(HttpResponseRedirect):

@@ -2,7 +2,6 @@ from django.urls import path
 
 from apps.api.views import status, user, token, password
 
-
 urlpatterns = [
     # Authentication
     path('token', token.TokenManagement.as_view(), name='token'),

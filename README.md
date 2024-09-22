@@ -11,7 +11,8 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - Hard/soft delete for models
 - Custom `User` model
 - Response objects (`SingleResponse`, `ValidationResponse`)
-- Custom JSON encoder prepared for [porcupine-python](https://github.com/zurek11/porcupine-python) serializer
+- [pydantic](https://github.com/pydantic/pydantic) response serialisation
+- Custom JSON encoder
 - Configuration using `.env` files
 - [Sentry](https://sentry.io/welcome) integration
 - Dependency management using [poetry](https://python-poetry.org/)

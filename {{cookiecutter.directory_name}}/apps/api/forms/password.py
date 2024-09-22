@@ -4,9 +4,9 @@ from django_api_forms import Form
 
 
 class RecoveryCodeForm(Form):
-    email = fields.EmailField()
+    email = fields.EmailField(label='Email')
 
 
 class NewPasswordForm(Form):
-    password = fields.CharField(validators=[validate_password])
-    recovery_code = fields.UUIDField()
+    password = fields.CharField(validators=[validate_password], label='Password')
+    recovery_code = fields.UUIDField(label='Recovery Code')

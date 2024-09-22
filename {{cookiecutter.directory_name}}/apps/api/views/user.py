@@ -7,13 +7,12 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from object_checker.base_object_checker import has_object_permission
 
-from apps.api.views.base import SecuredView
 from apps.api.errors import ValidationException, ProblemDetailException
 from apps.api.filters.user import UserFilter
 from apps.api.forms.user import UserForm
 from apps.api.response import SingleResponse, PaginationResponse
+from apps.api.views.base import SecuredView
 from apps.core.models.recovery_code import RecoveryCode
-
 from apps.core.models.user import User
 from apps.core.serializers.user import UserSerializer
 from apps.core.services.email_notification import NotificationEmailService

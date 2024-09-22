@@ -9,6 +9,7 @@ def permission_required(perm):
     """
     Mark a view function to check specific user permission.
     """
+
     def decorator(func):
         def wrapper(request, *args, **kwargs):
             if request.user.has_perm(perm):

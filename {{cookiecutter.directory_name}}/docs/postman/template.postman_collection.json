@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "99ab6da7-3c1c-427c-a56e-e034df460ac2",
+		"_postman_id": "533b0b1b-1d12-421d-b25b-bf5762373f4f",
 		"name": "template",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "36662000"
+		"_exporter_id": "20148588"
 	},
 	"item": [
 		{
@@ -150,14 +150,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/api/v1/auth",
+							"raw": "{{base_url}}/api/v1/token",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"auth"
+								"token"
 							]
 						}
 					},
@@ -181,23 +181,52 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/v1/logout",
+							"raw": "{{base_url}}/api/v1/token",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"logout"
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Me",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
 							]
 						}
 					},
 					"response": []
 				}
 			],
-			"auth": {
-				"type": "noauth"
-			},
 			"event": [
 				{
 					"listen": "prerequest",

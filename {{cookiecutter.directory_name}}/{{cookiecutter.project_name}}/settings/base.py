@@ -22,7 +22,6 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 ENV_FILE = os.path.join(BASE_DIR, '.env')
 PRIVATE_DIR = os.path.join(BASE_DIR, 'private')
 BUILD_FILE = Path(f"{BASE_DIR}/BUILD.txt")
-VERSION_FILE = Path(f"{BASE_DIR}/VERSION.txt")
 
 # .env
 if os.path.exists(ENV_FILE):
@@ -40,18 +39,13 @@ else:
 with open("pyproject.toml", "rb") as f:
     _META = tomllib.load(f)
 
-if VERSION_FILE.exists():
-    with open(VERSION_FILE) as f:
-        VERSION = f.readline().replace('\n', '')
-else:
-    VERSION = _META["tool"]["poetry"]["version"]
+VERSION = _META["tool"]["poetry"]["version"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Generated using: https://djecrety.ir/
-SECRET_KEY = os.getenv("SECRET_KEY", 'oqjwv$mob^(qwlil^8ub8%a@o5@a!^x0j1*^*1m@y46k%(6$+w')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False

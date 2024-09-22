@@ -17,11 +17,7 @@ class BearerBackend(ModelBackend):
         try:
             token = Token.objects.get(pk=kwargs['bearer'], expires_at__gte=timezone.now())
         except (Token.DoesNotExist, ValidationError):
-            raise ProblemDetailException(
-                request,
-                _('Invalid Bearer Token'),
-                status=HTTPStatus.UNAUTHORIZED,
-            )
+            raise UnauthorizedException(request, detail=_('Invalid Bearer Token'))
 
         if not self.user_can_authenticate(token.user):
             raise ProblemDetailException(request, _('Inactive user.'), status=HTTPStatus.FORBIDDEN)
