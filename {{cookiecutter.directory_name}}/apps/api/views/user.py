@@ -26,7 +26,7 @@ class UserManagement(SecuredView):
         form = UserForm.Create.create_from_request(request)
 
         if not form.is_valid():
-            raise ValidationException(request, form)
+            raise ValidationException(form)
 
         user = User()
         form.populate(user)
@@ -40,7 +40,9 @@ class UserManagement(SecuredView):
             subject=_('Registration'),
             content={
                 'recovery_code': recovery_code,
-                'login_url': f'{settings.BASE_URL}{reverse("password-change")}',
+                'login_url': request.build_absolute_uri(
+                    reverse('recovery-code-id', kwargs={'recovery_code_id': recovery_code.pk})
+                ),
             },
             template=settings.EMAIL_REGISTRATION_PATH,
         ).send_email()
@@ -59,7 +61,7 @@ class UserDetail(SecuredView):
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist as e:
-            raise ProblemDetailException(request, _('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
+            raise ProblemDetailException(_('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
 
         return user
 
@@ -73,13 +75,13 @@ class UserDetail(SecuredView):
         form = UserForm.Update.create_from_request(request)
 
         if not form.is_valid():
-            raise ValidationException(request, form)
+            raise ValidationException(form)
 
         user = self._get_user(request, user_id)
 
         if User.objects.filter(email=form.cleaned_data['email']).exclude(pk=user.id).exists():
             raise ProblemDetailException(
-                request, _('User with the same email already exists.'), status=HTTPStatus.CONFLICT
+                _('User with the same email already exists.'), status=HTTPStatus.CONFLICT
             )
 
         form.populate(user)
@@ -107,10 +109,10 @@ class ChangePasswordDetail(SecuredView):
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist as e:
-            raise ProblemDetailException(request, _('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
+            raise ProblemDetailException(_('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
 
         if not has_object_permission('check_user_get', user=request.user, obj=user):
-            raise ProblemDetailException(request, _('Permission denied.'), status=HTTPStatus.FORBIDDEN)
+            raise ProblemDetailException(_('Permission denied.'), status=HTTPStatus.FORBIDDEN)
 
         return user
 
@@ -118,7 +120,7 @@ class ChangePasswordDetail(SecuredView):
         form = UserForm.ChangePasswordForm.create_from_request(request)
 
         if not form.is_valid():
-            raise ValidationException(request, form)
+            raise ValidationException(form)
 
         user = self._get_user(request, user_id)
 

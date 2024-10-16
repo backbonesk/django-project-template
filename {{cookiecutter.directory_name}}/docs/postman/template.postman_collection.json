@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "533b0b1b-1d12-421d-b25b-bf5762373f4f",
+		"_postman_id": "ed2a6e57-1fb7-4182-a5dd-675846c8b45b",
 		"name": "template",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20148588"
+		"_exporter_id": "25507590",
+		"_collection_link": "https://red-firefly-250246.postman.co/workspace/Team-Workspace~e9ea43d7-54e1-47d6-8b1b-5a881d5fa63b/collection/25507590-ed2a6e57-1fb7-4182-a5dd-675846c8b45b?action=share&source=collection_link&creator=25507590"
 	},
 	"item": [
 		{
@@ -201,6 +202,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"user_id\", jsonData.response.id);",
 									""
 								],
 								"type": "text/javascript",
@@ -275,7 +278,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"password\": \"{{pwd}}\",\n    \"recovery_code\": \"9664bb65-cc1a-41da-968a-db7115cceccc\"\n}",
+									"raw": "{\n    \"password\": \"{{pwd}}\",\n    \"recovery_code\": \"1ae037d3-7677-4454-83e2-573e4f099cb1\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -283,15 +286,21 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/api/v1/password/change",
+									"raw": "{{base_url}}/api/v1/recovery-code/:recovery_code_id",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"password",
-										"change"
+										"recovery-code",
+										":recovery_code_id"
+									],
+									"variable": [
+										{
+											"key": "recovery_code_id",
+											"value": "1ae037d3-7677-4454-83e2-573e4f099cb1"
+										}
 									]
 								}
 							},
@@ -324,15 +333,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/api/v1/password/recovery",
+									"raw": "{{base_url}}/api/v1/recovery-code",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"password",
-										"recovery"
+										"recovery-code"
 									]
 								}
 							},
@@ -369,6 +377,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"user_id\", jsonData.response.id);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"email\", jsonData.response.email);",
 									""
 								],
 								"type": "text/javascript",
@@ -384,7 +397,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"email\",\n    \"name\": \"user\",\n    \"surname\": \"user\"\n}",
+							"raw": "{\n    \"email\": \"email@user.com\",\n    \"name\": \"user\",\n    \"surname\": \"user\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -445,6 +458,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"user_id\", jsonData.response.id);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"email\", jsonData.response.email);",
 									""
 								],
 								"type": "text/javascript",
@@ -454,8 +472,11 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"packages": {},
-								"type": "text/javascript"
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -475,7 +496,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"raw": "{{base_url}}/api/v1/users/:user_id",
 							"host": [
 								"{{base_url}}"
 							],
@@ -483,7 +504,13 @@
 								"api",
 								"v1",
 								"users",
-								"{{user_id}}"
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
 							]
 						}
 					},
@@ -519,7 +546,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"raw": "{{base_url}}/api/v1/users/:user_id",
 							"host": [
 								"{{base_url}}"
 							],
@@ -527,7 +554,13 @@
 								"api",
 								"v1",
 								"users",
-								"{{user_id}}"
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
 							]
 						}
 					},

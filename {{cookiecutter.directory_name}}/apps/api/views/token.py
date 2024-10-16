@@ -20,12 +20,12 @@ class TokenManagement(SecuredView):
         form = TokenForm.Basic.create_from_request(request)
 
         if not form.is_valid():
-            raise ValidationException(request, form)
+            raise ValidationException(form)
 
         user = authenticate(request, email=form.cleaned_data['email'], password=form.cleaned_data['password'])
 
         if not user:
-            raise UnauthorizedException(request)
+            raise UnauthorizedException()
 
         token = Token.objects.create(user=user)
 

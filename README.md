@@ -44,9 +44,9 @@ cookiecutter gh:backbonesk/django-project-template
 3. `python -m venv venv`
 4. `poetry install && poetry update`
 5. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
-6. You are supposed to create superuser using `python manage.py createsuperuser`
-7. When the project is set up, you can call `{baseurl}/status` to check if everything is up and running
-8. Take a coffee and celebrate life, you saved a plenty of time!
-
+6. Call `python manage.py makemigrations` and then `python manage.py migrate`
+7. You are supposed to create superuser using `python manage.py createsuperuser`
+8. When the project is set up, you can call `{baseurl}/status` to check if everything is up and running
+9. Take a coffee and celebrate life, you saved a plenty of time!
 ---
 Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2024

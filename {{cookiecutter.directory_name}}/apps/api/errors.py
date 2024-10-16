@@ -19,6 +19,7 @@ class DetailType(Enum):
     CONFLICT = '/conflict'
     INVALID_APIKEY = '/invalid-api-key'
     INVALID_SIGNATURE = '/invalid-signature'
+    REQUEST_PAYLOAD_TOO_BIG = '/request-payload-too-big'
 
 
 class ProblemDetail(Serializer):
@@ -40,7 +41,6 @@ class ValidationError(ProblemDetail):
 class ProblemDetailException(Exception):
     def __init__(
         self,
-        request,
         title: str,
         status: int = HTTPStatus.INTERNAL_SERVER_ERROR,
         previous: Optional[BaseException] = None,
@@ -52,7 +52,6 @@ class ProblemDetailException(Exception):
     ):
         super().__init__(title)
 
-        self._request = request
         self._title = title
         self._status_code = status
         self._previous = previous
@@ -70,10 +69,6 @@ class ProblemDetailException(Exception):
                 for key, value in self.__dict__.items():
                     scope.set_extra(key, value)
                 sentry_sdk.capture_exception(self)
-
-    @property
-    def request(self):
-        return self._request
 
     @property
     def title(self) -> str:
@@ -109,11 +104,10 @@ class ProblemDetailException(Exception):
 
 
 class UnauthorizedException(ProblemDetailException):
-    def __init__(self, request, detail: Optional[str] = None):
+    def __init__(self, detail: Optional[str] = None, status=HTTPStatus.UNAUTHORIZED):
         super().__init__(
-            request,
             _('Unauthorized'),
-            status=HTTPStatus.UNAUTHORIZED,
+            status=status,
             extra_headers=(
                 ('WWW-Authenticate', f'Bearer realm="{slugify(settings.INSTANCE_NAME)}"'),
             ),
@@ -122,8 +116,8 @@ class UnauthorizedException(ProblemDetailException):
 
 
 class ValidationException(ProblemDetailException):
-    def __init__(self, request, form: Form):
-        super().__init__(request, _('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
+    def __init__(self, form: Form):
+        super().__init__(_('Validation error!'), status=HTTPStatus.UNPROCESSABLE_ENTITY)
         self._form = form
 
     @property
@@ -131,9 +125,11 @@ class ValidationException(ProblemDetailException):
         return ValidationError(
             title=_('Invalid request parameters'),
             type=DetailType.VALIDATION_ERROR,
-            validation_errors=[ValidationErrorItem(
-                code=item.code,
-                message=item.message % (item.params or ()),
-                path=getattr(item, 'path', ['$body'])
-            ) for item in self._form.errors],
+            validation_errors=[
+                ValidationErrorItem(
+                    code=item.code,
+                    message=item.message % (item.params or ()),
+                    path=getattr(item, 'path', ['$body'])
+                ) for item in self._form.errors
+            ],
         )
