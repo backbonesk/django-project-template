@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.api.views import status, user, token, password
+from apps.api.views import status, user, token, recovery_code
 
 urlpatterns = [
     # Authentication
