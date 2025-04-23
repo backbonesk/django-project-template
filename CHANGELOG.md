@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 : 2024-14-10
+
+- Remove request from exceptions
+- Change password operation to recovery-code to be declarative
+- Remove BASE_URL from settings
+
 ## 0.4.0 : 2024-06-09
 
 - Updated SecuredView

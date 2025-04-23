@@ -27,7 +27,6 @@ BUILD_FILE = Path(f"{BASE_DIR}/BUILD.txt")
 if os.path.exists(ENV_FILE):
     load_dotenv(dotenv_path=ENV_FILE, verbose=True)
 
-BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
 INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
 
 if BUILD_FILE.exists():

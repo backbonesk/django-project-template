@@ -1,7 +1,7 @@
-PasswordRecoveryManagement:
+RecoveryCodeManagement:
   post:
     tags:
-      - Password operations
+      - Recovery Code
     summary: Send email with recovery code
     parameters:
       - $ref: "../requests/headers.yaml#/Accept"
@@ -13,17 +13,17 @@ PasswordRecoveryManagement:
       content:
         application/json:
           schema:
-            $ref: "../requests/forms/password.yaml#/EmailRecoveryForm"
+            $ref: "../requests/forms/recovery_code.yaml#/RecoveryCodeForm.Email"
     responses:
       '204':
         description: No Content
 
 
-ChangePasswordManagement:
+RecoveryCodeDetail:
   post:
     tags:
-      - Password operations
-    summary: Create new password from recovery code
+      - Recovery Code
+    summary: Create new password using recovery code
     parameters:
       - $ref: "../requests/headers.yaml#/Accept"
       - $ref: "../requests/headers.yaml#/ContentType"
@@ -34,7 +34,7 @@ ChangePasswordManagement:
       content:
         application/json:
           schema:
-            $ref: "../requests/forms/password.yaml#/PasswordRecoveryForm"
+            $ref: "../requests/forms/recovery_code.yaml#/RecoveryCodeForm.Password"
     responses:
       '204':
         description: No Content

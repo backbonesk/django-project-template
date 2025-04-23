@@ -33,7 +33,7 @@ COPY conf/supervisor.conf /etc/supervisord.conf
 RUN chmod +x conf/entrypoint.sh
 
 # Health check
-#HEALTHCHECK CMD curl --fail http://localhost:9000/api/v1/status || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:8000/api/v1/status || exit 1
 
 # Execution
 CMD ["conf/entrypoint.sh"]

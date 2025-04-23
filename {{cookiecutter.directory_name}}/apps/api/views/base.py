@@ -41,10 +41,10 @@ class SecuredView(View):
         auth_header = str(auth_header).split(' ')
 
         if len(auth_header) != 2:
-            raise UnauthorizedException(request, detail=_("Invalid or missing Authorization header"))
+            raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
 
         if not auth_header[0] in settings.SECURED_VIEW_AUTHENTICATION_SCHEMAS.keys():
-            raise UnauthorizedException(request, detail=_('Unsupported authentication schema'))
+            raise UnauthorizedException(detail=_('Unsupported authentication schema'))
 
         auth_params = {
             auth_header[0].lower(): auth_header[1]
@@ -54,7 +54,7 @@ class SecuredView(View):
 
         if not settings.IS_ENABLED_ANONYMOUS_USER:
             if user.is_anonymous:
-                raise UnauthorizedException(request, detail=_("Invalid or missing Authorization header"))
+                raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
 
         return user
 
@@ -65,7 +65,7 @@ class SecuredView(View):
             api_key_model = ApiKey.objects.get(pk=api_key, is_active=True)
         except ApiKey.DoesNotExist:
             raise ProblemDetailException(
-                request, _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
+                _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
                 detail_type=DetailType.INVALID_APIKEY
             )
 
@@ -74,7 +74,6 @@ class SecuredView(View):
 
         if api_key_model.platform == ApiKey.DevicePlatform.DEBUG and not settings.DEBUG:
             raise ProblemDetailException(
-                request,
                 title=_('Invalid api key.'),
                 status=HTTPStatus.UNAUTHORIZED,
                 detail_type=DetailType.INVALID_APIKEY
@@ -101,7 +100,6 @@ class SecuredView(View):
 
         if signature != signature_check:
             raise ProblemDetailException(
-                request,
                 _('Invalid signature.'),
                 status=HTTPStatus.BAD_REQUEST,
                 to_sentry=True,
@@ -126,7 +124,7 @@ class SecuredView(View):
         if request.method in self.REQUIRE_SUPERUSER:
             if not request.user.is_superuser:
                 raise ProblemDetailException(
-                    request, _('Insufficient permissions'), status=HTTPStatus.FORBIDDEN,
+                    _('Insufficient permissions'), status=HTTPStatus.FORBIDDEN,
                 )
 
         return super().dispatch(request, *args, **kwargs)

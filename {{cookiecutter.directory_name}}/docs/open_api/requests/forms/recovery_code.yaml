@@ -1,4 +1,4 @@
-EmailRecoveryForm:
+RecoveryCodeForm.Email:
   type: object
   properties:
     email:
@@ -8,16 +8,11 @@ EmailRecoveryForm:
     - email
 
 
-PasswordRecoveryForm:
+RecoveryCodeForm.Password:
   type: object
   properties:
     password:
       type: string
       example: "BestPasswordEver"
-    recovery_code:
-      type: string
-      format: uuid
-      example: "23f35ah3-4gd9-5sg3-4hc3-124racd434fs"
   required:
     - password
-    - recovery_code

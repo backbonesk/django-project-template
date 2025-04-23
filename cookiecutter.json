@@ -4,7 +4,7 @@
   "description": "Another awesome project which will save the word!",
   "_copy_without_render": [
     "*.html",
-    "*.yaml",
-    "*.json"
+    "*.json",
+    "docs/open_api/requests/headers.yaml"
   ]
 }
