@@ -49,4 +49,4 @@ cookiecutter gh:backbonesk/django-project-template
 8. When the project is set up, you can call `{baseurl}/status` to check if everything is up and running
 9. Take a coffee and celebrate life, you saved a plenty of time!
 ---
-Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2024
+Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2025
